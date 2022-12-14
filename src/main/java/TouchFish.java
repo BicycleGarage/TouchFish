@@ -19,6 +19,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,9 +40,10 @@ public class TouchFish {
 //        printHolidays(nameHolidayMap, nextWeekend);
 //        printHolidayLeftDays(now, nameHolidayMap, nextWeekend);
 
+        int height = nameHolidayMap.size() >= 5 ? 500 : 200;
         JFrame jf = new JFrame("摸鱼小助手");
-        jf.setPreferredSize(new Dimension(400, 200));
-        jf.setMinimumSize(new Dimension(400, 200));
+        jf.setPreferredSize(new Dimension(400, height));
+        jf.setMinimumSize(new Dimension(400, height));
         jf.setLayout(new BorderLayout());
 
         JPanel panel1 = getHolidayPanel(nameHolidayMap, nextWeekend);
@@ -141,8 +143,16 @@ public class TouchFish {
     private static Map<String, Holiday> getNameHolidayMap(LocalDate now) {
         JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()));
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);
-        Map<String, List<Holiday>> nameHolidayListMap = holidays.stream().collect(Collectors.groupingBy(Holiday::getName));
-        Map<String, Holiday> nameHolidayMap = new HashMap<>();
+        if(now.getMonthValue() >= 11) {
+            JSONArray holidayOfNextYearJson = getHolidayOfYear(String.valueOf(now.getYear() + 1));
+            List<Holiday> nextYearHolidays = holidayOfNextYearJson.toJavaList(Holiday.class);
+            if(nextYearHolidays != null && nextYearHolidays.size() > 0) {
+                holidays.addAll(nextYearHolidays);
+            }
+        }
+        Map<String, List<Holiday>> nameHolidayListMap = holidays.stream()
+                .collect(Collectors.groupingBy(holiday -> holiday.getName() + "(" + holiday.getDate().getYear() + ")"));
+        Map<String, Holiday> nameHolidayMap = new LinkedHashMap<>();
         for (Map.Entry<String, List<Holiday>> nameHolidayEntry : nameHolidayListMap.entrySet()) {
             String holidayName = nameHolidayEntry.getKey();
             List<Holiday> holidayListByName = nameHolidayEntry.getValue();
@@ -157,7 +167,11 @@ public class TouchFish {
                 }
             }
         }
-        return nameHolidayMap;
+        Map<String, Holiday> resultMap = new LinkedHashMap<>();
+        nameHolidayMap.entrySet().stream()
+                .sorted(Comparator.comparing(o -> o.getValue().getDate()))
+                .forEach(entry -> resultMap.put(entry.getKey(), entry.getValue()));
+        return resultMap;
     }
 
     /**
