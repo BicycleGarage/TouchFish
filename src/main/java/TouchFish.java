@@ -40,7 +40,7 @@ public class TouchFish {
 //        printHolidays(nameHolidayMap, nextWeekend);
 //        printHolidayLeftDays(now, nameHolidayMap, nextWeekend);
 
-        int height = nameHolidayMap.size() >= 5 ? 500 : 200;
+        int height = nameHolidayMap.size() >= 5 ? 850 : 400;
         JFrame jf = new JFrame("摸鱼小助手");
         jf.setPreferredSize(new Dimension(400, height));
         jf.setMinimumSize(new Dimension(400, height));
@@ -258,7 +258,10 @@ public class TouchFish {
         // 国内镜像地址
         // return "https://natescarlet.coding.net/p/github/d/holiday-cn/git/raw/master/" + year + ".json";
         // cdn地址
-        return "https://cdn.jsdelivr.net/gh/NateScarlet/holiday-cn@master/" + year + ".json";
+        // 2023-04-04 从2022-08-05开始，要求登录才能下载开源仓库的文件。
+        // return "https://cdn.jsdelivr.net/gh/NateScarlet/holiday-cn@master/" + year + ".json";
+        // ghproxy 加速镜像
+        return "https://ghproxy.com/https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/" + year + ".json";
     }
 
     /**
