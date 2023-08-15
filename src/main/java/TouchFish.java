@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,8 +18,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,34 +27,53 @@ import java.util.stream.Collectors;
 
 public class TouchFish {
 
-    private final static String HOLIDAY_PATTERN = "%-3s";
-    private final static String TITLE_PATTERN = "%-4s";
-    private final static String CONTEXT_PATTERN = "%-12s";
     public static final Color COLOR_RED = new Color(245, 74, 69);
+    public static final int FIRST_PAYDAY = 10;
+    public static final int SECOND_PAYDAY = 15;
+    public static final int SATURDAY_VALUE = DayOfWeek.SATURDAY.getValue();
+    public static final int SUNDAY_VALUE = DayOfWeek.SUNDAY.getValue();
+    public static final DecimalFormat FORMAT = new DecimalFormat("00");
+
+    /**
+     * 今年节假日，同时包含放假、补班日（如周六日本应双休，但由于调休机制需要补班，其isOffDay=false）
+     */
+    public static List<Holiday> holidayList;
+    /**
+     * 名称-假日map：key=节假日名称，value=非补班日的此假期的第一天
+     */
+    public static Map<String, Holiday> nameHolidayMapNoOffDay;
+    /**
+     * 今年补班的周六日日期
+     */
+    public static List<LocalDate> notOffHolidayDateList;
+    /**
+     * 今年放假且不补班的假期日期
+     */
+    public static List<LocalDate> holidayDateList;
 
     public static void main(String[] args) {
         LocalDate now = LocalDate.now();
 
-        Map<String, Holiday> nameHolidayMap = getNameHolidayMap(now);
+        initHolidayData(now);
         LocalDate nextWeekend = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
 
-//        printHolidays(nameHolidayMap, nextWeekend);
-//        printHolidayLeftDays(now, nameHolidayMap, nextWeekend);
-
-        int height = nameHolidayMap.size() >= 5 ? 850 : 400;
+        int height = nameHolidayMapNoOffDay.size() >= 5 ? 850 : 400;
         JFrame jf = new JFrame("摸鱼小助手");
         jf.setPreferredSize(new Dimension(400, height));
         jf.setMinimumSize(new Dimension(400, height));
-        jf.setLayout(new BorderLayout());
+        jf.setLayout(new FlowLayout());
 
-        JPanel panel1 = getHolidayPanel(nameHolidayMap, nextWeekend);
-        jf.add(panel1, BorderLayout.NORTH);
+        JPanel panel1 = getHolidayPanel(nextWeekend);
+        jf.add(panel1);
 
         JPanel panel2 = getNoticePanel(now);
-        jf.add(panel2, BorderLayout.CENTER);
+        jf.add(panel2);
 
-        JPanel panel3 = getLeftDayPanel(now, nameHolidayMap, nextWeekend);
-        jf.add(panel3, BorderLayout.SOUTH);
+        JPanel panel3 = getLeftDayPanel(now, nextWeekend);
+        jf.add(panel3);
+
+        JPanel panel4 = getPayday(now);
+        jf.add(panel4);
 
         // 设置窗口大小
         jf.setSize(250, 250);
@@ -67,19 +87,93 @@ public class TouchFish {
     }
 
     /**
+     * 获取发薪日剩余天数
+     * 获取当月、下月的10、15日及距离其天数，若发薪日为周六日、节假日，则提前至最近的工作日
+     * @param now 现在时间
+     * @return 获取发薪日剩余天数JPanel
+     */
+    private static JPanel getPayday(LocalDate now) {
+        List<LocalDate> paydayList = doGetPayday(now);
+
+        List<LocalDate> futurePaydayList = paydayList.stream()
+                .filter(date -> !date.isBefore(now))
+                .collect(Collectors.toList());
+
+        JPanel panel = new JPanel();
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panel.setLayout(new GridLayout(1 + futurePaydayList.size() + 1,1));
+        List<JLabel> labelList = new ArrayList<>();
+        labelList.add(new JLabel("距离发薪日还有：\n"));
+        for (LocalDate payday : futurePaydayList) {
+            labelList.add(new JLabel("距离" + FORMAT.format(payday.getMonthValue()) + "月"
+                    + FORMAT.format(payday.getDayOfMonth()) + "日还有："
+                    + now.until(payday, ChronoUnit.DAYS) + "天"));
+        }
+        for (JLabel jLabel : labelList) {
+            panel.add(jLabel);
+        }
+        return panel;
+    }
+
+    /**
+     * 获取发薪日<br />
+     * 发薪日：当月、下月的10、15日，若发薪日为周六日、节假日，则提前至最近的工作日
+     * @param now 现在时间
+     * @return 发薪日集合：固定4个，本月和下月的10、15日（若发薪日为周六日、节假日，则提前至最近的工作日）
+     */
+    private static List<LocalDate> doGetPayday(LocalDate now) {
+        int currentMonthYear = now.getYear();
+        int currentMonth = now.getMonthValue();
+        LocalDate currentMonthFirstPayday = doGetWorkDayPayday(LocalDate.of(currentMonthYear, currentMonth, FIRST_PAYDAY));
+        LocalDate currentMonthSecondPayday = doGetWorkDayPayday(LocalDate.of(currentMonthYear, currentMonth, SECOND_PAYDAY));
+        
+        LocalDate nextMonthNow = now.plusMonths(1L);
+        int nextMonthYear = nextMonthNow.getYear();
+        int nextMonth = nextMonthNow.getMonthValue();
+        LocalDate nextMonthFirstPayday = doGetWorkDayPayday(LocalDate.of(nextMonthYear, nextMonth, FIRST_PAYDAY));
+        LocalDate nextMonthSecondPayday = doGetWorkDayPayday(LocalDate.of(nextMonthYear, nextMonth, SECOND_PAYDAY));
+
+        return Arrays.asList(currentMonthFirstPayday, currentMonthSecondPayday, 
+                nextMonthFirstPayday, nextMonthSecondPayday);
+    }
+
+    /**
+     * 获取工作日发薪日：若发薪日位于周六日或假期内，则提前到最近的工作日
+     * @param payday 未提前到工作日的发薪日
+     * @return 提前到工作日的发薪日
+     */
+    private static LocalDate doGetWorkDayPayday(LocalDate payday) {
+        int paydayDayOfWeekValue = payday.getDayOfWeek().getValue();
+        if(SATURDAY_VALUE == paydayDayOfWeekValue || SUNDAY_VALUE == paydayDayOfWeekValue){
+            if(notOffHolidayDateList.contains(payday)) {
+                return payday;
+            } else {
+                payday = payday.minusDays(1L);
+                return doGetWorkDayPayday(payday);
+            }
+        } else {
+            if(holidayDateList.contains(payday)) {
+                payday = payday.minusDays(1L);
+                return doGetWorkDayPayday(payday);
+            } else {
+                return payday;
+            }
+        }
+    }
+
+    /**
      * 获取假期剩余天数
      * @param now 现在时间
-     * @param nameHolidayMap 今年的剩余假期
      * @param nextWeekend 周末
      * @return 剩余天数JPanel
      */
-    private static JPanel getLeftDayPanel(LocalDate now, Map<String, Holiday> nameHolidayMap, LocalDate nextWeekend) {
+    private static JPanel getLeftDayPanel(LocalDate now, LocalDate nextWeekend) {
         JPanel panel3 = new JPanel();
         panel3.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel3.setLayout(new GridLayout(1 + nameHolidayMap.size(),1));
+        panel3.setLayout(new GridLayout(1 + nameHolidayMapNoOffDay.size(),1));
         List<JLabel> holidayLeftDaysLabelList = new ArrayList<>();
         holidayLeftDaysLabelList.add(new JLabel("距离本周周末还有：" + now.until(nextWeekend, ChronoUnit.DAYS) + "天"));
-        for (Holiday holiday : nameHolidayMap.values()) {
+        for (Holiday holiday : nameHolidayMapNoOffDay.values()) {
             holidayLeftDaysLabelList.add(new JLabel("距离" + holiday.getName() + "假期还有："
                     + now.until(holiday.getDate(), ChronoUnit.DAYS) + "天"));
         }
@@ -115,18 +209,17 @@ public class TouchFish {
 
     /**
      * 获取最近假期
-     * @param nameHolidayMap 今年的剩余假期
      * @param nextWeekend 周末
      * @return 最近假期JPanel
      */
-    private static JPanel getHolidayPanel(Map<String, Holiday> nameHolidayMap, LocalDate nextWeekend) {
+    private static JPanel getHolidayPanel(LocalDate nextWeekend) {
         JPanel panel1 = new JPanel();
         panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel1.setLayout(new GridLayout(2 + nameHolidayMap.size(),1));
+        panel1.setLayout(new GridLayout(2 + nameHolidayMapNoOffDay.size(),1));
         List<JLabel> holidayLabelList = new ArrayList<>();
         holidayLabelList.add(new JLabel("最近的假期："));
         holidayLabelList.add(new JLabel("周末：" + nextWeekend.toString()));
-        for (Holiday holiday : nameHolidayMap.values()) {
+        for (Holiday holiday : nameHolidayMapNoOffDay.values()) {
             holidayLabelList.add(new JLabel(holiday.getName() + "：" + holiday.getDate().toString()));
         }
         for (JLabel jLabel : holidayLabelList) {
@@ -136,21 +229,37 @@ public class TouchFish {
     }
 
     /**
-     * 获取今年的假期map
+     * 初始化节假日数：今年的节假日集合holidayList，名称-节假日map（不含补班日） nameHolidayMapNoOffDay
      * @param now 现在日期
-     * @return 今年的假期map
      */
-    private static Map<String, Holiday> getNameHolidayMap(LocalDate now) {
+    private static void initHolidayData(LocalDate now) {
         JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()));
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);
-        if(now.getMonthValue() >= 11) {
+        if (now.getMonthValue() >= 11) {
             JSONArray holidayOfNextYearJson = getHolidayOfYear(String.valueOf(now.getYear() + 1));
             List<Holiday> nextYearHolidays = holidayOfNextYearJson.toJavaList(Holiday.class);
-            if(nextYearHolidays != null && nextYearHolidays.size() > 0) {
+            if (nextYearHolidays != null && nextYearHolidays.size() > 0) {
                 holidays.addAll(nextYearHolidays);
             }
         }
+        holidayList = holidays;
+
+        notOffHolidayDateList = holidays.stream()
+                .filter(holiday -> {
+                    int holidayDayOfWeekValue = holiday.getDate().getDayOfWeek().getValue();
+                    return (holidayDayOfWeekValue == SATURDAY_VALUE || holidayDayOfWeekValue == SUNDAY_VALUE)
+                            && !holiday.getOffDay();
+                })
+                .map(Holiday::getDate)
+                .collect(Collectors.toList());
+
+        holidayDateList = holidays.stream()
+                .filter(Holiday::getOffDay)
+                .map(Holiday::getDate)
+                .collect(Collectors.toList());
+
         Map<String, List<Holiday>> nameHolidayListMap = holidays.stream()
+                .filter(holiday -> !holiday.getOffDay())
                 .collect(Collectors.groupingBy(holiday -> holiday.getName() + "(" + holiday.getDate().getYear() + ")"));
         Map<String, Holiday> nameHolidayMap = new LinkedHashMap<>();
         for (Map.Entry<String, List<Holiday>> nameHolidayEntry : nameHolidayListMap.entrySet()) {
@@ -160,9 +269,9 @@ public class TouchFish {
                     .min(Comparator.comparing(Holiday::getDate))
                     .orElse(new Holiday());
             Holiday holiday = nameHolidayMap.get(holidayName);
-            if(holiday == null) {
+            if (holiday == null) {
                 holiday = holidayBegin;
-                if(holiday.getDate() != null && holiday.getDate().compareTo(now) > 0) {
+                if (holiday.getDate() != null && holiday.getDate().compareTo(now) > 0) {
                     nameHolidayMap.put(holidayName, holiday);
                 }
             }
@@ -171,54 +280,9 @@ public class TouchFish {
         nameHolidayMap.entrySet().stream()
                 .sorted(Comparator.comparing(o -> o.getValue().getDate()))
                 .forEach(entry -> resultMap.put(entry.getKey(), entry.getValue()));
-        return resultMap;
+        nameHolidayMapNoOffDay = resultMap;
     }
 
-    /**
-     * 输出今年剩余假期
-     * @param nameHolidayMap 今年的假期map
-     * @param nextWeekend 本周末
-     */
-    private static void printHolidays(Map<String, Holiday> nameHolidayMap, LocalDate nextWeekend) {
-        System.out.println("今年剩余的假期：");
-        printHoliday("周末：", nextWeekend.toString());
-        for (Holiday holiday : nameHolidayMap.values()) {
-            printHoliday(holiday.getName() + "：", holiday.getDate().toString());
-        }
-        System.out.println();
-    }
-
-    /**
-     * 输出距离各假日还有几天
-     * @param now 现在日期
-     * @param nameHolidayMap 今年的假期map
-     * @param nextWeekend 本周末
-     */
-    private static void printHolidayLeftDays(LocalDate now, Map<String, Holiday> nameHolidayMap, LocalDate nextWeekend) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM月dd日");
-        System.out.println(formatter.format(now) + getPeriod()+ "，摸鱼人，我是本群摸鱼小助手，下面是摸鱼提醒");
-        System.out.println("工作再累，一定不要忘记摸鱼哦");
-        System.out.println("有事没事，起身去茶水间去厕所去廊道走走，别老在工位上坐着，钱是老板的，但命是自己的");
-        printLeftDays("本周周末",
-                String.valueOf(now.until(nextWeekend, ChronoUnit.DAYS)));
-        for (Holiday holiday : nameHolidayMap.values()) {
-            printLeftDays(holiday.getName() + "假期",
-                    String.valueOf(now.until(holiday.getDate(), ChronoUnit.DAYS)));
-        }
-    }
-
-    private static void printHoliday(String title, String context){
-        System.out.printf(TouchFish.HOLIDAY_PATTERN, title);
-        System.out.print(context);
-        System.out.println();
-    }
-
-    private static void printLeftDays(String title, String days){
-        System.out.printf(TouchFish.CONTEXT_PATTERN, "距离" +title+ "还有");
-        System.out.printf(TouchFish.TITLE_PATTERN, days);
-        System.out.print("天");
-        System.out.println();
-    }
 
     private static String getPeriod(){
         LocalDateTime now = LocalDateTime.now();
