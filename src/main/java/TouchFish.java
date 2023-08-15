@@ -61,7 +61,7 @@ public class TouchFish {
         JFrame jf = new JFrame("摸鱼小助手");
         jf.setPreferredSize(new Dimension(400, height));
         jf.setMinimumSize(new Dimension(400, height));
-        jf.setLayout(new FlowLayout());
+        jf.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         JPanel panel1 = getHolidayPanel(nextWeekend);
         jf.add(panel1);
@@ -69,11 +69,11 @@ public class TouchFish {
         JPanel panel2 = getNoticePanel(now);
         jf.add(panel2);
 
-        JPanel panel3 = getLeftDayPanel(now, nextWeekend);
-        jf.add(panel3);
-
         JPanel panel4 = getPayday(now);
         jf.add(panel4);
+
+        JPanel panel3 = getLeftDayPanel(now, nextWeekend);
+        jf.add(panel3);
 
         // 设置窗口大小
         jf.setSize(250, 250);
