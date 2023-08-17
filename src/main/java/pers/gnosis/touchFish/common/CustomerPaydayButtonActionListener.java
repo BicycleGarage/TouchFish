@@ -4,10 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +16,15 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
     private List<LocalDate> notOffHolidayDateList;
     private List<LocalDate> holidayDateList;
 
+    public CustomerPaydayButtonActionListener(
+            JPanel daysToPaydayPanel, JTextField customerPaydayTextField, LocalDate now,
+            List<LocalDate> notOffHolidayDateList, List<LocalDate> holidayDateList) {
+        this.daysToPaydayPanel = daysToPaydayPanel;
+        this.customerPaydayTextField = customerPaydayTextField;
+        this.now = now;
+        this.notOffHolidayDateList = notOffHolidayDateList;
+        this.holidayDateList = holidayDateList;
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
