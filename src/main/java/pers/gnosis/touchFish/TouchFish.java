@@ -100,14 +100,10 @@ public class TouchFish {
     private static JPanel getPayday(LocalDate now) {
         List<LocalDate> paydayList = doGetPayday(now);
 
-        List<LocalDate> futurePaydayList = paydayList.stream()
-                .filter(date -> !date.isBefore(now))
-                .collect(Collectors.toList());
-
         JPanel panel = new JPanel();
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel.setLayout(new GridLayout(1 + futurePaydayList.size() + 1, 1));
-        List<JLabel> labelList = Utils.getDaysToPaydayLabel(now, futurePaydayList);
+        panel.setLayout(new GridLayout(1 + paydayList.size() + 1, 1));
+        List<JLabel> labelList = Utils.getDaysToPaydayLabel(now, paydayList);
         for (JLabel jLabel : labelList) {
             panel.add(jLabel);
         }

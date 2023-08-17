@@ -81,6 +81,9 @@ public class Utils {
         }
         labelList.add(new JLabel("距离发薪日还有：\n"));
         for (LocalDate payday : futurePaydayList) {
+            if(payday.isBefore(now)) {
+                continue;
+            }
             labelList.add(new JLabel("距离" + FORMAT.format(payday.getMonthValue()) + "月"
                     + FORMAT.format(payday.getDayOfMonth()) + "日还有："
                     + now.until(payday, ChronoUnit.DAYS) + "天"));
