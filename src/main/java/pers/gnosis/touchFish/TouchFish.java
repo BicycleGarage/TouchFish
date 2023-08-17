@@ -2,19 +2,19 @@ package pers.gnosis.touchFish;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import pers.gnosis.touchFish.common.CustomerPaydayButtonActionListener;
+import pers.gnosis.touchFish.common.NumberTextField;
+import pers.gnosis.touchFish.common.Utils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,10 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import pers.gnosis.touchFish.common.CustomerPaydayButtonActionListener;
-import pers.gnosis.touchFish.common.NumberTextField;
-import pers.gnosis.touchFish.common.Utils;
 
 public class TouchFish {
 
@@ -97,6 +93,7 @@ public class TouchFish {
     /**
      * 获取发薪日剩余天数
      * 获取当月、下月的10、15日及距离其天数，若发薪日为周六日、节假日，则提前至最近的工作日
+     *
      * @param now 现在时间
      * @return 获取发薪日剩余天数JPanel
      */
@@ -109,7 +106,7 @@ public class TouchFish {
 
         JPanel panel = new JPanel();
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel.setLayout(new GridLayout(1 + futurePaydayList.size() + 1,1));
+        panel.setLayout(new GridLayout(1 + futurePaydayList.size() + 1, 1));
         List<JLabel> labelList = Utils.getDaysToPaydayLabel(now, futurePaydayList);
         for (JLabel jLabel : labelList) {
             panel.add(jLabel);
@@ -133,53 +130,6 @@ public class TouchFish {
         JButton customerPaydayButton = new JButton("确定");
         customerPaydayButton.addActionListener(new CustomerPaydayButtonActionListener(
                 daysToPaydayPanel, customerPaydayTextField, now, notOffHolidayDateList, holidayDateList));
-//        customerPaydayButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // 清空上次的自定义发薪日label
-//                daysToPaydayPanel.removeAll();
-//
-//                String customerPaydayTextFieldText = customerPaydayTextField.getText();
-//                if(customerPaydayTextFieldText == null || "".equals(customerPaydayTextFieldText)) {
-//                    return;
-//                }
-//                int customerPaydayDayOfMonth = getNormalCustomerPayday(customerPaydayTextFieldText);
-//
-//                LocalDate customerCurrentMonthPayday = Utils.getWorkDayPayday(
-//                        now, customerPaydayDayOfMonth, notOffHolidayDateList, holidayDateList);
-//                LocalDate customerNextMonthPayday = Utils.getWorkDayPayday(
-//                        now.plusMonths(1L), customerPaydayDayOfMonth, notOffHolidayDateList, holidayDateList);
-//                List<JLabel> daysToPaydayLabelList = Utils.getDaysToPaydayLabel(
-//                        now, Arrays.asList(customerCurrentMonthPayday, customerNextMonthPayday));
-//                daysToPaydayPanel.setLayout(new GridLayout(daysToPaydayLabelList.size(),1));
-//                for (JLabel label : daysToPaydayLabelList) {
-//                    daysToPaydayPanel.add(label);
-//                }
-//
-//                // 对panel内部的组件进行重新布局和绘制
-//                daysToPaydayPanel.revalidate();
-//                // 对panel本身进行重新绘制
-//                daysToPaydayPanel.repaint();
-//            }
-//
-//            /**
-//             * 获取规格化发薪日值：<br />
-//             * 小于1的取1，大于31的取31；<br />
-//             * 若大于本月最大日，取本月最大日
-//             * @param customerPaydayTextFieldText 用户填写的日期字符串，已限制为仅为数字，无需再控制异常
-//             * @return 规格化发薪日值
-//             */
-//            private int getNormalCustomerPayday(String customerPaydayTextFieldText) {
-//                int customerPaydayDayOfMonth = Integer.parseInt(customerPaydayTextFieldText);
-//                if(customerPaydayDayOfMonth > 32) {
-//                    customerPaydayDayOfMonth = 31;
-//                }
-//                if(customerPaydayDayOfMonth < 1) {
-//                    customerPaydayDayOfMonth = 1;
-//                }
-//                return customerPaydayDayOfMonth;
-//            }
-//        });
 
         inputPaydayPanel.add(customerPaydayLabel);
         inputPaydayPanel.add(customerPaydayTextField);
@@ -195,6 +145,7 @@ public class TouchFish {
     /**
      * 获取发薪日<br />
      * 发薪日：当月、下月的10、15日，若发薪日为周六日、节假日，则提前至最近的工作日
+     *
      * @param now 现在时间
      * @return 发薪日集合：固定4个，本月和下月的10、15日（若发薪日为周六日、节假日，则提前至最近的工作日）
      */
@@ -203,27 +154,28 @@ public class TouchFish {
                 now, FIRST_PAYDAY, notOffHolidayDateList, holidayDateList);
         LocalDate currentMonthSecondPayday = Utils.getWorkDayPayday(
                 now, SECOND_PAYDAY, notOffHolidayDateList, holidayDateList);
-        
+
         LocalDate nextMonthNow = now.plusMonths(1L);
         LocalDate nextMonthFirstPayday = Utils.getWorkDayPayday(
                 nextMonthNow, FIRST_PAYDAY, notOffHolidayDateList, holidayDateList);
         LocalDate nextMonthSecondPayday = Utils.getWorkDayPayday(
                 nextMonthNow, SECOND_PAYDAY, notOffHolidayDateList, holidayDateList);
 
-        return Arrays.asList(currentMonthFirstPayday, currentMonthSecondPayday, 
+        return Arrays.asList(currentMonthFirstPayday, currentMonthSecondPayday,
                 nextMonthFirstPayday, nextMonthSecondPayday);
     }
 
     /**
      * 获取假期剩余天数
-     * @param now 现在时间
+     *
+     * @param now         现在时间
      * @param nextWeekend 周末
      * @return 剩余天数JPanel
      */
     private static JPanel getLeftDayPanel(LocalDate now, LocalDate nextWeekend) {
         JPanel panel3 = new JPanel();
         panel3.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel3.setLayout(new GridLayout(1 + nameHolidayMapNoOffDay.size(),1));
+        panel3.setLayout(new GridLayout(1 + nameHolidayMapNoOffDay.size(), 1));
         List<JLabel> holidayLeftDaysLabelList = new ArrayList<>();
         holidayLeftDaysLabelList.add(new JLabel("距离本周周末还有：" + now.until(nextWeekend, ChronoUnit.DAYS) + "天"));
         for (Holiday holiday : nameHolidayMapNoOffDay.values()) {
@@ -238,16 +190,17 @@ public class TouchFish {
 
     /**
      * 获取提示信息
+     *
      * @param now 现在时间
      * @return 提示信息JPanel
      */
     private static JPanel getNoticePanel(LocalDate now) {
         JPanel panel2 = new JPanel();
         panel2.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel2.setLayout(new GridLayout(5,1));
+        panel2.setLayout(new GridLayout(5, 1));
         List<JLabel> noticeText = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM月dd日");
-        noticeText.add(new JLabel(formatter.format(now) + getPeriod()+ "，摸鱼人"));
+        noticeText.add(new JLabel(formatter.format(now) + getPeriod() + "，摸鱼人"));
         noticeText.add(new JLabel("我是摸鱼小助手，下面是摸鱼提醒"));
         noticeText.add(new JLabel("工作再累，一定不要忘记摸鱼哦"));
         noticeText.add(new JLabel("有事没事，起身去茶水间去厕所去廊道走走，别老在工位上坐着"));
@@ -262,13 +215,14 @@ public class TouchFish {
 
     /**
      * 获取最近假期
+     *
      * @param nextWeekend 周末
      * @return 最近假期JPanel
      */
     private static JPanel getHolidayPanel(LocalDate nextWeekend) {
         JPanel panel1 = new JPanel();
         panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel1.setLayout(new GridLayout(2 + nameHolidayMapNoOffDay.size(),1));
+        panel1.setLayout(new GridLayout(2 + nameHolidayMapNoOffDay.size(), 1));
         List<JLabel> holidayLabelList = new ArrayList<>();
         holidayLabelList.add(new JLabel("最近的假期："));
         holidayLabelList.add(new JLabel("周末：" + nextWeekend.toString()));
@@ -283,6 +237,7 @@ public class TouchFish {
 
     /**
      * 初始化节假日数：今年的节假日集合holidayList，名称-节假日map（不含补班日） nameHolidayMapNoOffDay
+     *
      * @param now 现在日期
      */
     private static void initHolidayData(LocalDate now) {
@@ -338,28 +293,28 @@ public class TouchFish {
     }
 
 
-    private static String getPeriod(){
+    private static String getPeriod() {
         LocalDateTime now = LocalDateTime.now();
         int hour = now.getHour();
-        if(hour < 3){
+        if (hour < 3) {
             return "夜深了";
         }
-        if(hour < 5){
+        if (hour < 5) {
             return "天亮了";
         }
-        if(hour < 9){
+        if (hour < 9) {
             return "早上好";
         }
-        if(hour < 12){
+        if (hour < 12) {
             return "上午好";
         }
-        if(hour < 14){
+        if (hour < 14) {
             return "中午好";
         }
-        if(hour < 18){
+        if (hour < 18) {
             return "下午好";
         }
-        if(hour < 23){
+        if (hour < 23) {
             return "晚上好";
         }
         return "";
@@ -367,6 +322,7 @@ public class TouchFish {
 
     /**
      * 获取指定年的所有节假日
+     *
      * @param year 指定年
      * @return 节假日json
      */

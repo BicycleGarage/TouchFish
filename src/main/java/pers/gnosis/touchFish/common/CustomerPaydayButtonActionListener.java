@@ -32,7 +32,7 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
         daysToPaydayPanel.removeAll();
 
         String customerPaydayTextFieldText = customerPaydayTextField.getText();
-        if(customerPaydayTextFieldText == null || "".equals(customerPaydayTextFieldText)) {
+        if (customerPaydayTextFieldText == null || "".equals(customerPaydayTextFieldText)) {
             return;
         }
         int customerPaydayDayOfMonth = getNormalCustomerPayday(customerPaydayTextFieldText);
@@ -43,7 +43,7 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
                 now.plusMonths(1L), customerPaydayDayOfMonth, notOffHolidayDateList, holidayDateList);
         List<JLabel> daysToPaydayLabelList = Utils.getDaysToPaydayLabel(
                 now, Arrays.asList(customerCurrentMonthPayday, customerNextMonthPayday));
-        daysToPaydayPanel.setLayout(new GridLayout(daysToPaydayLabelList.size(),1));
+        daysToPaydayPanel.setLayout(new GridLayout(daysToPaydayLabelList.size(), 1));
         for (JLabel label : daysToPaydayLabelList) {
             daysToPaydayPanel.add(label);
         }
@@ -58,15 +58,16 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
      * 获取规格化发薪日值：<br />
      * 小于1的取1，大于31的取31；<br />
      * 若大于本月最大日，取本月最大日
+     *
      * @param customerPaydayTextFieldText 用户填写的日期字符串，已限制为仅为数字，无需再控制异常
      * @return 规格化发薪日值
      */
     private int getNormalCustomerPayday(String customerPaydayTextFieldText) {
         int customerPaydayDayOfMonth = Integer.parseInt(customerPaydayTextFieldText);
-        if(customerPaydayDayOfMonth > 32) {
+        if (customerPaydayDayOfMonth > 32) {
             customerPaydayDayOfMonth = 31;
         }
-        if(customerPaydayDayOfMonth < 1) {
+        if (customerPaydayDayOfMonth < 1) {
             customerPaydayDayOfMonth = 1;
         }
         return customerPaydayDayOfMonth;
