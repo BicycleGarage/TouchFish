@@ -150,8 +150,8 @@ public class TouchFish {
 
         JPanel panel = new JPanel();
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel.setLayout(new GridLayout(1 + paydayList.size() + 1, 1));
         List<JLabel> labelList = Utils.getDaysToPaydayLabel(now, paydayList);
+        panel.setLayout(new GridLayout(labelList.size(), 1));
         for (JLabel jLabel : labelList) {
             panel.add(jLabel);
         }
@@ -161,9 +161,12 @@ public class TouchFish {
 
     private static JPanel getCustomerPaydayPanel(LocalDate now) {
         JPanel panel = new JPanel();
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         panel.setLayout(new GridLayout(2, 1));
 
         JPanel inputPaydayPanel = new JPanel();
+        // JPanel默认布局为FlowLayout，其内部元素左边距有5，去掉左边距使该panel与GridLayout布局的panel对齐
+        inputPaydayPanel.setBorder(new EmptyBorder(0, -5, 0, 0));
         JPanel daysToPaydayPanel = new JPanel();
 
         JLabel customerPaydayLabel = new JLabel("自定义发薪日：");
