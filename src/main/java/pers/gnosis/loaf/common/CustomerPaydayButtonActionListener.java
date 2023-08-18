@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class CustomerPaydayButtonActionListener implements ActionListener {
 
+    public static final int MAX_DAY_OF_MONTH = 31;
     private final JPanel daysToPaydayPanel;
     private final JTextField customerPaydayTextField;
     private final LocalDate now;
@@ -67,8 +68,8 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
      */
     private int getNormalCustomerPayday(String customerPaydayTextFieldText) {
         int customerPaydayDayOfMonth = Integer.parseInt(customerPaydayTextFieldText);
-        if (customerPaydayDayOfMonth > 32) {
-            customerPaydayDayOfMonth = 31;
+        if (customerPaydayDayOfMonth > MAX_DAY_OF_MONTH) {
+            customerPaydayDayOfMonth = MAX_DAY_OF_MONTH;
         }
         if (customerPaydayDayOfMonth < 1) {
             customerPaydayDayOfMonth = 1;

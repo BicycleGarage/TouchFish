@@ -416,7 +416,7 @@ public class TouchFish {
      */
     public static String get(String url, int i) {
         // 请求url
-        URL getUrl = null;
+        URL getUrl;
         // 连接
         HttpURLConnection connection = null;
         // 输入流
@@ -433,7 +433,7 @@ public class TouchFish {
             // 获取输入流
             reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
             // 读取返回结果
-            String line = "";
+            String line;
             // 读取每一行
             while ((line = reader.readLine()) != null) {
                 // 拼接返回结果
