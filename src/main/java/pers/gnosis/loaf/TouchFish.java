@@ -34,17 +34,53 @@ import java.util.stream.Collectors;
  */
 public class TouchFish {
 
+    /**
+     * 字体标红色号
+     */
     public static final Color COLOR_RED = new Color(245, 74, 69);
+    /**
+     * 首次发薪日
+     */
     public static final int FIRST_PAYDAY = 10;
+    /**
+     * 二次发薪日
+     */
     public static final int SECOND_PAYDAY = 15;
+    /**
+     * 十一月
+     */
     public static final int NOVEMBER = 11;
+    /**
+     * 3点钟
+     */
     public static final int THREE_O_CLOCK = 3;
+    /**
+     * 5点钟
+     */
     public static final int FIVE_O_CLOCK = 5;
+    /**
+     * 9点钟
+     */
     public static final int NINE_O_CLOCK = 9;
+    /**
+     * 12点钟
+     */
     public static final int TWELVE_O_CLOCK = 12;
+    /**
+     * 14点钟
+     */
     public static final int FOURTEEN_O_CLOCK = 14;
+    /**
+     * 18点钟
+     */
     public static final int EIGHTEEN_O_CLOCK = 18;
+    /**
+     * 23点钟
+     */
     public static final int TWENTY_TREE_O_CLOCK = 23;
+    /**
+     * 网络连接重试次数
+     */
     public static final int RETRY_TIME = 2;
 
     /**
