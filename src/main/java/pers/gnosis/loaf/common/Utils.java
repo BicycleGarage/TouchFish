@@ -1,4 +1,4 @@
-package pers.gnosis.touchFish.common;
+package pers.gnosis.loaf.common;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
@@ -9,6 +9,9 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author wangsiye
+ */
 public class Utils {
     public static final int SATURDAY_VALUE = DayOfWeek.SATURDAY.getValue();
     public static final int SUNDAY_VALUE = DayOfWeek.SUNDAY.getValue();

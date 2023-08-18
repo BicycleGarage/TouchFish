@@ -1,4 +1,4 @@
-package pers.gnosis.touchFish.common;
+package pers.gnosis.loaf.common;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,13 +8,16 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author wangsiye
+ */
 public class CustomerPaydayButtonActionListener implements ActionListener {
 
-    private JPanel daysToPaydayPanel;
-    private JTextField customerPaydayTextField;
-    private LocalDate now;
-    private List<LocalDate> notOffHolidayDateList;
-    private List<LocalDate> holidayDateList;
+    private final JPanel daysToPaydayPanel;
+    private final JTextField customerPaydayTextField;
+    private final LocalDate now;
+    private final List<LocalDate> notOffHolidayDateList;
+    private final List<LocalDate> holidayDateList;
 
     public CustomerPaydayButtonActionListener(
             JPanel daysToPaydayPanel, JTextField customerPaydayTextField, LocalDate now,

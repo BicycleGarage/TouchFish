@@ -1,8 +1,11 @@
-package pers.gnosis.touchFish.common;
+package pers.gnosis.loaf.common;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.PlainDocument;
 
+/**
+ * @author wangsiye
+ */
 public class NumberTextField extends PlainDocument {
     public NumberTextField() {
         super();

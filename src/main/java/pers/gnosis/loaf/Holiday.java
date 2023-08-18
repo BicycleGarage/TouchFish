@@ -1,4 +1,4 @@
-package pers.gnosis.touchFish;
+package pers.gnosis.loaf;
 
 import java.time.LocalDate;
 

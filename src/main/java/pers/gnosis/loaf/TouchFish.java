@@ -1,10 +1,10 @@
-package pers.gnosis.touchFish;
+package pers.gnosis.loaf;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import pers.gnosis.touchFish.common.CustomerPaydayButtonActionListener;
-import pers.gnosis.touchFish.common.NumberTextField;
-import pers.gnosis.touchFish.common.Utils;
+import pers.gnosis.loaf.common.CustomerPaydayButtonActionListener;
+import pers.gnosis.loaf.common.NumberTextField;
+import pers.gnosis.loaf.common.Utils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -29,11 +29,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @author wangsiye
+ */
 public class TouchFish {
 
     public static final Color COLOR_RED = new Color(245, 74, 69);
     public static final int FIRST_PAYDAY = 10;
     public static final int SECOND_PAYDAY = 15;
+    public static final int NOVEMBER = 11;
+    public static final int THREE_O_CLOCK = 3;
+    public static final int FIVE_O_CLOCK = 5;
+    public static final int NINE_O_CLOCK = 9;
+    public static final int TWELVE_O_CLOCK = 12;
+    public static final int FOURTEEN_O_CLOCK = 14;
+    public static final int EIGHTEEN_O_CLOCK = 18;
+    public static final int TWENTY_TREE_O_CLOCK = 23;
+    public static final int RETRY_TIME = 2;
 
     /**
      * 今年节假日，同时包含放假、补班日（如周六日本应双休，但由于调休机制需要补班，其isOffDay=false）
@@ -239,7 +251,7 @@ public class TouchFish {
     private static void initHolidayData(LocalDate now) {
         JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()));
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);
-        if (now.getMonthValue() >= 11) {
+        if (now.getMonthValue() >= NOVEMBER) {
             JSONArray holidayOfNextYearJson = getHolidayOfYear(String.valueOf(now.getYear() + 1));
             List<Holiday> nextYearHolidays = holidayOfNextYearJson.toJavaList(Holiday.class);
             if (nextYearHolidays != null && nextYearHolidays.size() > 0) {
@@ -292,25 +304,25 @@ public class TouchFish {
     private static String getPeriod() {
         LocalDateTime now = LocalDateTime.now();
         int hour = now.getHour();
-        if (hour < 3) {
+        if (hour < THREE_O_CLOCK) {
             return "夜深了";
         }
-        if (hour < 5) {
+        if (hour < FIVE_O_CLOCK) {
             return "天亮了";
         }
-        if (hour < 9) {
+        if (hour < NINE_O_CLOCK) {
             return "早上好";
         }
-        if (hour < 12) {
+        if (hour < TWELVE_O_CLOCK) {
             return "上午好";
         }
-        if (hour < 14) {
+        if (hour < FOURTEEN_O_CLOCK) {
             return "中午好";
         }
-        if (hour < 18) {
+        if (hour < EIGHTEEN_O_CLOCK) {
             return "下午好";
         }
-        if (hour < 23) {
+        if (hour < TWENTY_TREE_O_CLOCK) {
             return "晚上好";
         }
         return "";
@@ -394,7 +406,7 @@ public class TouchFish {
         } catch (IOException e) {
             e.printStackTrace();
             // 如果请求失败, 尝试重新请求
-            if (i < 2) {
+            if (i < RETRY_TIME) {
                 i++;
                 try {
                     System.out.println("第" + i + "次获取失败, 尝试重新请求");
