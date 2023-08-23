@@ -3,8 +3,10 @@ package pers.gnosis.loaf;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import pers.gnosis.loaf.common.CustomerPaydayButtonActionListener;
+import pers.gnosis.loaf.common.DateTimeUtil;
 import pers.gnosis.loaf.common.NumberTextField;
-import pers.gnosis.loaf.common.Utils;
+import pers.gnosis.loaf.common.PaydayUtil;
+import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -39,92 +41,41 @@ public class LoafOnTheJob {
      */
     public static final Color COLOR_RED = new Color(245, 74, 69);
     /**
-     * 首次发薪日
-     */
-    public static final int FIRST_PAYDAY = 10;
-    /**
-     * 二次发薪日
-     */
-    public static final int SECOND_PAYDAY = 15;
-    /**
-     * 十一月
-     */
-    public static final int NOVEMBER = 11;
-    /**
-     * 3点钟
-     */
-    public static final int THREE_O_CLOCK = 3;
-    /**
-     * 5点钟
-     */
-    public static final int FIVE_O_CLOCK = 5;
-    /**
-     * 9点钟
-     */
-    public static final int NINE_O_CLOCK = 9;
-    /**
-     * 12点钟
-     */
-    public static final int TWELVE_O_CLOCK = 12;
-    /**
-     * 14点钟
-     */
-    public static final int FOURTEEN_O_CLOCK = 14;
-    /**
-     * 18点钟
-     */
-    public static final int EIGHTEEN_O_CLOCK = 18;
-    /**
-     * 23点钟
-     */
-    public static final int TWENTY_TREE_O_CLOCK = 23;
-    /**
      * 网络连接重试次数
      */
     public static final int RETRY_TIME = 2;
 
-    /**
-     * 今年节假日，同时包含放假、补班日（如周六日本应双休，但由于调休机制需要补班，其isOffDay=false）
-     */
-    public static List<Holiday> holidayList;
-    /**
-     * 名称-假日map：key=节假日名称，value=非补班日的此假期的第一天
-     */
-    public static Map<String, Holiday> nameHolidayMapNoOffDay;
-    /**
-     * 补班的周六日日期
-     */
-    public static List<LocalDate> notOffHolidayDateList;
-    /**
-     * 放假且不补班的假期日期
-     */
-    public static List<LocalDate> holidayDateList;
+    private BaseDateBO baseDate;
+
+    public LoafOnTheJob(LocalDate now) {
+        this.baseDate = new BaseDateBO();
+        initHolidayData(now);
+    }
 
     public static void main(String[] args) {
-        LocalDate now = LocalDate.now();
+        LoafOnTheJob loafOnTheJob = new LoafOnTheJob(LocalDate.now());
+        BaseDateBO baseDate = loafOnTheJob.getBaseDate();
+        LocalDate now = baseDate.getNow();
 
-        initHolidayData(now);
-        LocalDate nextWeekend = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
-
-        int height = nameHolidayMapNoOffDay.size() >= 5 ? 1050 : 600;
+        int height = baseDate.getNameHolidayMapNoOffDay().size() >= 5 ? 1050 : 600;
         JFrame jf = new JFrame("摸鱼小助手");
         jf.setPreferredSize(new Dimension(400, height));
         jf.setMinimumSize(new Dimension(400, height));
         jf.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        JPanel panel1 = getHolidayPanel(nextWeekend);
+        JPanel panel1 = loafOnTheJob.getHolidayPanel();
         jf.add(panel1);
 
-        JPanel panel2 = getNoticePanel(now);
+        JPanel panel2 = loafOnTheJob.getNoticePanel();
         jf.add(panel2);
 
-        JPanel paydayPanel = getPayday(now);
+        JPanel paydayPanel = loafOnTheJob.getPayday();
         jf.add(paydayPanel);
 
-        JPanel panel3 = getLeftDayPanel(now, nextWeekend);
+        JPanel panel3 = loafOnTheJob.getLeftDayPanel();
         jf.add(panel3);
 
-        JPanel customerPaydayPanel = getCustomerPaydayPanel(now);
+        JPanel customerPaydayPanel = loafOnTheJob.getCustomerPaydayPanel();
         jf.add(customerPaydayPanel);
 
         // 设置窗口大小
@@ -142,15 +93,15 @@ public class LoafOnTheJob {
      * 获取发薪日剩余天数
      * 获取当月、下月的10、15日及距离其天数，若发薪日为周六日、节假日，则提前至最近的工作日
      *
-     * @param now 现在时间
      * @return 获取发薪日剩余天数JPanel
      */
-    private static JPanel getPayday(LocalDate now) {
-        List<LocalDate> paydayList = doGetPayday(now);
+    private JPanel getPayday() {
+        LocalDate now = baseDate.getNow();
+        List<LocalDate> paydayList = PaydayUtil.doGetPayday(baseDate);
 
         JPanel panel = new JPanel();
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        List<JLabel> labelList = Utils.getDaysToPaydayLabel(now, paydayList);
+        List<JLabel> labelList = PaydayUtil.getDaysToPaydayLabel(now, paydayList);
         panel.setLayout(new GridLayout(labelList.size(), 1));
         for (JLabel jLabel : labelList) {
             panel.add(jLabel);
@@ -159,7 +110,7 @@ public class LoafOnTheJob {
         return panel;
     }
 
-    private static JPanel getCustomerPaydayPanel(LocalDate now) {
+    private JPanel getCustomerPaydayPanel() {
         JPanel panel = new JPanel();
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         panel.setLayout(new GridLayout(2, 1));
@@ -176,7 +127,7 @@ public class LoafOnTheJob {
 
         JButton customerPaydayButton = new JButton("确定");
         customerPaydayButton.addActionListener(new CustomerPaydayButtonActionListener(
-                daysToPaydayPanel, customerPaydayTextField, now, notOffHolidayDateList, holidayDateList));
+                daysToPaydayPanel, customerPaydayTextField, baseDate));
 
         inputPaydayPanel.add(customerPaydayLabel);
         inputPaydayPanel.add(customerPaydayTextField);
@@ -190,38 +141,17 @@ public class LoafOnTheJob {
     }
 
     /**
-     * 获取发薪日<br />
-     * 发薪日：当月、下月的10、15日，若发薪日为周六日、节假日，则提前至最近的工作日
-     *
-     * @param now 现在时间
-     * @return 发薪日集合：固定4个，本月和下月的10、15日（若发薪日为周六日、节假日，则提前至最近的工作日）
-     */
-    private static List<LocalDate> doGetPayday(LocalDate now) {
-        LocalDate currentMonthFirstPayday = Utils.getWorkDayPayday(
-                now, FIRST_PAYDAY, notOffHolidayDateList, holidayDateList);
-        LocalDate currentMonthSecondPayday = Utils.getWorkDayPayday(
-                now, SECOND_PAYDAY, notOffHolidayDateList, holidayDateList);
-
-        LocalDate nextMonthNow = now.plusMonths(1L);
-        LocalDate nextMonthFirstPayday = Utils.getWorkDayPayday(
-                nextMonthNow, FIRST_PAYDAY, notOffHolidayDateList, holidayDateList);
-        LocalDate nextMonthSecondPayday = Utils.getWorkDayPayday(
-                nextMonthNow, SECOND_PAYDAY, notOffHolidayDateList, holidayDateList);
-
-        return Arrays.asList(currentMonthFirstPayday, currentMonthSecondPayday,
-                nextMonthFirstPayday, nextMonthSecondPayday);
-    }
-
-    /**
      * 获取假期剩余天数
      *
-     * @param now         现在时间
-     * @param nextWeekend 周末
      * @return 剩余天数JPanel
      */
-    private static JPanel getLeftDayPanel(LocalDate now, LocalDate nextWeekend) {
+    private JPanel getLeftDayPanel() {
+        LocalDate now = baseDate.getNow();
+        LocalDate nextWeekend = baseDate.getNextWeekend();
+
         JPanel panel3 = new JPanel();
         panel3.setBorder(new EmptyBorder(10, 10, 10, 10));
+        Map<String, Holiday> nameHolidayMapNoOffDay = baseDate.getNameHolidayMapNoOffDay();
         panel3.setLayout(new GridLayout(1 + nameHolidayMapNoOffDay.size(), 1));
         List<JLabel> holidayLeftDaysLabelList = new ArrayList<>();
         holidayLeftDaysLabelList.add(new JLabel("距离本周周末还有：" + now.until(nextWeekend, ChronoUnit.DAYS) + "天"));
@@ -238,16 +168,15 @@ public class LoafOnTheJob {
     /**
      * 获取提示信息
      *
-     * @param now 现在时间
      * @return 提示信息JPanel
      */
-    private static JPanel getNoticePanel(LocalDate now) {
+    private JPanel getNoticePanel() {
         JPanel panel2 = new JPanel();
         panel2.setBorder(new EmptyBorder(10, 10, 10, 10));
         panel2.setLayout(new GridLayout(5, 1));
         List<JLabel> noticeText = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM月dd日");
-        noticeText.add(new JLabel(formatter.format(now) + getPeriod() + "，摸鱼人"));
+        noticeText.add(new JLabel(formatter.format(baseDate.getNow()) + DateTimeUtil.getPeriod() + "，摸鱼人"));
         noticeText.add(new JLabel("我是摸鱼小助手，下面是摸鱼提醒"));
         noticeText.add(new JLabel("工作再累，一定不要忘记摸鱼哦"));
         noticeText.add(new JLabel("有事没事，起身去茶水间去厕所去廊道走走，别老在工位上坐着"));
@@ -263,16 +192,16 @@ public class LoafOnTheJob {
     /**
      * 获取最近假期
      *
-     * @param nextWeekend 周末
      * @return 最近假期JPanel
      */
-    private static JPanel getHolidayPanel(LocalDate nextWeekend) {
+    private JPanel getHolidayPanel() {
         JPanel panel1 = new JPanel();
         panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
+        Map<String, Holiday> nameHolidayMapNoOffDay = baseDate.getNameHolidayMapNoOffDay();
         panel1.setLayout(new GridLayout(2 + nameHolidayMapNoOffDay.size(), 1));
         List<JLabel> holidayLabelList = new ArrayList<>();
         holidayLabelList.add(new JLabel("最近的假期："));
-        holidayLabelList.add(new JLabel("周末：" + nextWeekend.toString()));
+        holidayLabelList.add(new JLabel("周末：" + baseDate.getNextWeekend().toString()));
         for (Holiday holiday : nameHolidayMapNoOffDay.values()) {
             holidayLabelList.add(new JLabel(holiday.getName() + "：" + holiday.getDate().toString()));
         }
@@ -287,32 +216,35 @@ public class LoafOnTheJob {
      *
      * @param now 现在日期
      */
-    private static void initHolidayData(LocalDate now) {
+    private void initHolidayData(LocalDate now) {
+        baseDate.setNow(now);
+        baseDate.setNextWeekend(now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
+
         JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()));
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);
-        if (now.getMonthValue() >= NOVEMBER) {
+        if (now.getMonthValue() >= DateTimeUtil.NOVEMBER) {
             JSONArray holidayOfNextYearJson = getHolidayOfYear(String.valueOf(now.getYear() + 1));
             List<Holiday> nextYearHolidays = holidayOfNextYearJson.toJavaList(Holiday.class);
             if (nextYearHolidays != null && nextYearHolidays.size() > 0) {
                 holidays.addAll(nextYearHolidays);
             }
         }
-        holidayList = holidays;
+        baseDate.setHolidayList(holidays);
 
-        notOffHolidayDateList = holidays.stream()
+        baseDate.setNotOffHolidayDateList(holidays.stream()
                 .filter(holiday -> {
                     int holidayDayOfWeekValue = holiday.getDate().getDayOfWeek().getValue();
-                    return (holidayDayOfWeekValue == Utils.SATURDAY_VALUE
-                            || holidayDayOfWeekValue == Utils.SUNDAY_VALUE)
+                    return (holidayDayOfWeekValue == PaydayUtil.SATURDAY_VALUE
+                            || holidayDayOfWeekValue == PaydayUtil.SUNDAY_VALUE)
                             && !holiday.getOffDay();
                 })
                 .map(Holiday::getDate)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
-        holidayDateList = holidays.stream()
+        baseDate.setHolidayDateList(holidays.stream()
                 .filter(Holiday::getOffDay)
                 .map(Holiday::getDate)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
         Map<String, List<Holiday>> nameHolidayListMap = holidays.stream()
                 .filter(holiday -> !holiday.getOffDay())
@@ -336,35 +268,7 @@ public class LoafOnTheJob {
         nameHolidayMap.entrySet().stream()
                 .sorted(Comparator.comparing(o -> o.getValue().getDate()))
                 .forEach(entry -> resultMap.put(entry.getKey(), entry.getValue()));
-        nameHolidayMapNoOffDay = resultMap;
-    }
-
-
-    private static String getPeriod() {
-        LocalDateTime now = LocalDateTime.now();
-        int hour = now.getHour();
-        if (hour < THREE_O_CLOCK) {
-            return "夜深了";
-        }
-        if (hour < FIVE_O_CLOCK) {
-            return "天亮了";
-        }
-        if (hour < NINE_O_CLOCK) {
-            return "早上好";
-        }
-        if (hour < TWELVE_O_CLOCK) {
-            return "上午好";
-        }
-        if (hour < FOURTEEN_O_CLOCK) {
-            return "中午好";
-        }
-        if (hour < EIGHTEEN_O_CLOCK) {
-            return "下午好";
-        }
-        if (hour < TWENTY_TREE_O_CLOCK) {
-            return "晚上好";
-        }
-        return "";
+        baseDate.setNameHolidayMapNoOffDay(resultMap);
     }
 
     /**
@@ -471,5 +375,13 @@ public class LoafOnTheJob {
             }
         }
         return lines.toString();
+    }
+
+    public BaseDateBO getBaseDate() {
+        return baseDate;
+    }
+
+    public void setBaseDate(BaseDateBO baseDate) {
+        this.baseDate = baseDate;
     }
 }

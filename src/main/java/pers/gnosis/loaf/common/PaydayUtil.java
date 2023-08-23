@@ -1,5 +1,7 @@
 package pers.gnosis.loaf.common;
 
+import pers.gnosis.loaf.pojo.bo.BaseDateBO;
+
 import javax.swing.*;
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;
@@ -7,38 +9,74 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author wangsiye
  */
-public class Utils {
+public class PaydayUtil {
+    /**
+     * 首次发薪日
+     */
+    public static final int FIRST_PAYDAY = 10;
+    /**
+     * 二次发薪日
+     */
+    public static final int SECOND_PAYDAY = 15;
     public static final int SATURDAY_VALUE = DayOfWeek.SATURDAY.getValue();
     public static final int SUNDAY_VALUE = DayOfWeek.SUNDAY.getValue();
     public static final DecimalFormat FORMAT = new DecimalFormat("00");
 
+
+    /**
+     * 获取发薪日<br />
+     * 发薪日：当月、下月的10、15日，若发薪日为周六日、节假日，则提前至最近的工作日
+     *
+     * @param baseDate 基本时间对象
+     * @return 发薪日集合：固定4个，本月和下月的10、15日（若发薪日为周六日、节假日，则提前至最近的工作日）
+     */
+    public static List<LocalDate> doGetPayday(BaseDateBO baseDate) {
+        LocalDate now = baseDate.getNow();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        LocalDate currentMonthFirstPayday = PaydayUtil.getWorkDayPayday(
+                year, month, FIRST_PAYDAY, baseDate);
+        LocalDate currentMonthSecondPayday = PaydayUtil.getWorkDayPayday(
+                year, month, SECOND_PAYDAY, baseDate);
+
+        LocalDate nextMonthNow = now.plusMonths(1L);
+        int nextMonthYear = nextMonthNow.getYear();
+        int nextMonth = nextMonthNow.getMonthValue();
+        LocalDate nextMonthFirstPayday = PaydayUtil.getWorkDayPayday(
+                nextMonthYear, nextMonth, FIRST_PAYDAY, baseDate);
+        LocalDate nextMonthSecondPayday = PaydayUtil.getWorkDayPayday(
+                nextMonthYear, nextMonth, SECOND_PAYDAY, baseDate);
+
+        return Arrays.asList(currentMonthFirstPayday, currentMonthSecondPayday,
+                nextMonthFirstPayday, nextMonthSecondPayday);
+    }
+
     /**
      * 根据年月、发薪日，获取位于工作日的发薪日：若发薪日为周六日、节假日，则提前至最近的工作日
      *
-     * @param now              日期，用于获取年月
+     * @param year             年
+     * @param month            月
      * @param paydayDayOfMonth 发薪日
+     * @param baseDate         基本数据
      * @return 对应日期年月的、位于工作日的发薪日
      */
-    public static LocalDate getWorkDayPayday(LocalDate now, int paydayDayOfMonth,
-                                             List<LocalDate> notOffHolidayDateList,
-                                             List<LocalDate> holidayDateList) {
-        int currentMonthYear = now.getYear();
-        int currentMonth = now.getMonthValue();
+    public static LocalDate getWorkDayPayday(int year, int month, int paydayDayOfMonth, BaseDateBO baseDate) {
 
         // 处理本月最大日：填31时，若本月只有30日，则改为30；2月份同理
-        LocalDate lastDayOfMonth = now.with(TemporalAdjusters.lastDayOfMonth());
+        LocalDate lastDayOfMonth = LocalDate.of(year, month, 1).with(TemporalAdjusters.lastDayOfMonth());
         int lastDay = lastDayOfMonth.getDayOfMonth();
         if (paydayDayOfMonth > lastDay) {
             paydayDayOfMonth = lastDay;
         }
 
-        return doGetWorkDayPayday(LocalDate.of(currentMonthYear, currentMonth, paydayDayOfMonth),
-                notOffHolidayDateList, holidayDateList);
+        return doGetWorkDayPayday(LocalDate.of(year, month, paydayDayOfMonth),
+                baseDate.getNotOffHolidayDateList(), baseDate.getHolidayDateList());
     }
 
     /**
@@ -84,7 +122,7 @@ public class Utils {
         }
         labelList.add(new JLabel("距离发薪日还有：\n"));
         for (LocalDate payday : futurePaydayList) {
-            if(payday.isBefore(now)) {
+            if (payday.isBefore(now)) {
                 continue;
             }
             labelList.add(new JLabel("距离" + FORMAT.format(payday.getMonthValue()) + "月"

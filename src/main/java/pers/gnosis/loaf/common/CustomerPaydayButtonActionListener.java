@@ -1,5 +1,7 @@
 package pers.gnosis.loaf.common;
 
+import pers.gnosis.loaf.pojo.bo.BaseDateBO;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,18 +18,14 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
     public static final int MAX_DAY_OF_MONTH = 31;
     private final JPanel daysToPaydayPanel;
     private final JTextField customerPaydayTextField;
-    private final LocalDate now;
-    private final List<LocalDate> notOffHolidayDateList;
-    private final List<LocalDate> holidayDateList;
+    private final BaseDateBO baseDateBO;
 
-    public CustomerPaydayButtonActionListener(
-            JPanel daysToPaydayPanel, JTextField customerPaydayTextField, LocalDate now,
-            List<LocalDate> notOffHolidayDateList, List<LocalDate> holidayDateList) {
+    public CustomerPaydayButtonActionListener(JPanel daysToPaydayPanel,
+                                              JTextField customerPaydayTextField,
+                                              BaseDateBO baseDate) {
         this.daysToPaydayPanel = daysToPaydayPanel;
         this.customerPaydayTextField = customerPaydayTextField;
-        this.now = now;
-        this.notOffHolidayDateList = notOffHolidayDateList;
-        this.holidayDateList = holidayDateList;
+        this.baseDateBO = baseDate;
     }
 
     @Override
@@ -41,11 +39,14 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
         }
         int customerPaydayDayOfMonth = getNormalCustomerPayday(customerPaydayTextFieldText);
 
-        LocalDate customerCurrentMonthPayday = Utils.getWorkDayPayday(
-                now, customerPaydayDayOfMonth, notOffHolidayDateList, holidayDateList);
-        LocalDate customerNextMonthPayday = Utils.getWorkDayPayday(
-                now.plusMonths(1L), customerPaydayDayOfMonth, notOffHolidayDateList, holidayDateList);
-        List<JLabel> daysToPaydayLabelList = Utils.getDaysToPaydayLabel(
+        LocalDate now = baseDateBO.getNow();
+        LocalDate nextMonthNow = now.plusMonths(1L);
+
+        LocalDate customerCurrentMonthPayday = PaydayUtil.getWorkDayPayday(
+                now.getYear(), now.getMonthValue(), customerPaydayDayOfMonth, baseDateBO);
+        LocalDate customerNextMonthPayday = PaydayUtil.getWorkDayPayday(
+                nextMonthNow.getYear(), nextMonthNow.getMonthValue(), customerPaydayDayOfMonth, baseDateBO);
+        List<JLabel> daysToPaydayLabelList = PaydayUtil.getDaysToPaydayLabel(
                 now, Arrays.asList(customerCurrentMonthPayday, customerNextMonthPayday));
         daysToPaydayPanel.setLayout(new GridLayout(daysToPaydayLabelList.size(), 1));
         for (JLabel label : daysToPaydayLabelList) {
