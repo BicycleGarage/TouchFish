@@ -10,7 +10,14 @@ import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,6 +47,7 @@ public class LoafOnTheJob {
      * 字体标红色号
      */
     public static final Color COLOR_RED = new Color(245, 74, 69);
+    public static final Color COLOR_BACKGROUND = new Color(0, 0, 0, 10);
     /**
      * 网络连接重试次数
      */
@@ -55,13 +63,46 @@ public class LoafOnTheJob {
     public static void main(String[] args) {
         LoafOnTheJob loafOnTheJob = new LoafOnTheJob(LocalDate.now());
         BaseDateBO baseDate = loafOnTheJob.getBaseDate();
-        LocalDate now = baseDate.getNow();
 
         int height = baseDate.getNameHolidayMapNoOffDay().size() >= 5 ? 1050 : 600;
         JFrame jf = new JFrame("摸鱼小助手");
         jf.setPreferredSize(new Dimension(400, height));
         jf.setMinimumSize(new Dimension(400, height));
         jf.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+
+        // 记录鼠标按下时的坐标
+        final int[] xOld = new int[1];
+        final int[] yOld = new int[1];
+        jf.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                xOld[0] = e.getX();
+                yOld[0] = e.getY();
+            }
+        });
+        jf.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int xOnScreen = e.getXOnScreen();
+                int yOnScreen = e.getYOnScreen();
+                int xx = xOnScreen - xOld[0];
+                int yy = yOnScreen - yOld[0];
+                jf.setLocation(xx, yy);
+            }
+        });
+
+        JButton closeButton = new JButton("Kill me !");
+        closeButton.addActionListener(event -> System.exit(0));
+        jf.add(closeButton);
+
+        // 设置窗口无装饰，否则无法设置背景颜色
+        jf.setUndecorated(true);
+        jf.setOpacity(0.8F);
+        jf.add(new JLabel("透明度："));
+        JSlider slider = loafOnTheJob.getOpacitySlider(jf);
+        jf.add(slider);
 
         JPanel panel1 = loafOnTheJob.getHolidayPanel();
         jf.add(panel1);
@@ -87,6 +128,24 @@ public class LoafOnTheJob {
         // 显示窗口，前面创建的信息都在内存中，通过 jf.setVisible(true) 把内存中的窗口显示在屏幕上。
         jf.setVisible(true);
 
+    }
+
+    private JSlider getOpacitySlider(JFrame jFrame) {
+        // 创建一个水平方向的滑动条，初始值为50，最小值为20（太透明会看不见），最大值为100
+        JSlider slider = new JSlider(JSlider.HORIZONTAL, 20, 100, 80);
+        // 设置主刻度间隔为10
+        slider.setMajorTickSpacing(10);
+        // 设置次刻度间隔为5
+        slider.setMinorTickSpacing(5);
+        // 显示刻度
+        slider.setPaintTicks(true);
+        // 显示刻度标签
+        slider.setPaintLabels(true);
+        slider.addChangeListener(event -> {
+            float valueFloat = slider.getValue();
+            jFrame.setOpacity(valueFloat / 100);
+        });
+        return slider;
     }
 
     /**
