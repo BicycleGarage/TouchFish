@@ -10,11 +10,7 @@ import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -26,12 +22,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -93,31 +87,19 @@ public class LoafOnTheJob {
             }
         });
 
-        JButton closeButton = new JButton("Kill me !");
-        closeButton.addActionListener(event -> System.exit(0));
-        jf.add(closeButton);
+        jf.add(loafOnTheJob.getCloseButtonAndAlwaysOnTopCheckBoxPanel(jf));
 
-        // 设置窗口无装饰，否则无法设置背景颜色
-        jf.setUndecorated(true);
-        jf.setOpacity(0.8F);
-        jf.add(new JLabel("透明度："));
-        JSlider slider = loafOnTheJob.getOpacitySlider(jf);
-        jf.add(slider);
+        jf.add(loafOnTheJob.getOpacitySliderPanel(jf));
 
-        JPanel panel1 = loafOnTheJob.getHolidayPanel();
-        jf.add(panel1);
+        jf.add(loafOnTheJob.getHolidayPanel());
 
-        JPanel panel2 = loafOnTheJob.getNoticePanel();
-        jf.add(panel2);
+        jf.add(loafOnTheJob.getNoticePanel());
 
-        JPanel paydayPanel = loafOnTheJob.getPayday();
-        jf.add(paydayPanel);
+        jf.add(loafOnTheJob.getPayday());
 
-        JPanel panel3 = loafOnTheJob.getLeftDayPanel();
-        jf.add(panel3);
+        jf.add(loafOnTheJob.getLeftDayPanel());
 
-        JPanel customerPaydayPanel = loafOnTheJob.getCustomerPaydayPanel();
-        jf.add(customerPaydayPanel);
+        jf.add(loafOnTheJob.getCustomerPaydayPanel());
 
         // 设置窗口大小
         jf.setSize(250, 250);
@@ -130,7 +112,30 @@ public class LoafOnTheJob {
 
     }
 
-    private JSlider getOpacitySlider(JFrame jFrame) {
+    private JPanel getCloseButtonAndAlwaysOnTopCheckBoxPanel(JFrame jf) {
+        JPanel closeButtonAndAlwaysOnTopCheckBoxPanel = new JPanel();
+        JButton closeButton = new JButton("Kill me !");
+        closeButton.addActionListener(event -> System.exit(0));
+        closeButtonAndAlwaysOnTopCheckBoxPanel.add(closeButton);
+
+        // 无实际作用，目的是关闭按钮和置顶显示间隔一段空隙
+        closeButtonAndAlwaysOnTopCheckBoxPanel.add(new Label("        "));
+
+        final boolean[] alwaysOnTop = {false};
+        JCheckBox alwaysOnTopCheckBox = new JCheckBox("置顶显示：");
+        alwaysOnTopCheckBox.addChangeListener(event -> {
+            alwaysOnTop[0] = !alwaysOnTop[0];
+            jf.setAlwaysOnTop(alwaysOnTop[0]);
+        });
+        closeButtonAndAlwaysOnTopCheckBoxPanel.add(alwaysOnTopCheckBox);
+        return closeButtonAndAlwaysOnTopCheckBoxPanel;
+    }
+
+    private JPanel getOpacitySliderPanel(JFrame jFrame) {
+        // 设置窗口无装饰，否则无法设置背景颜色
+        jFrame.setUndecorated(true);
+        jFrame.setOpacity(0.8F);
+
         // 创建一个水平方向的滑动条，初始值为50，最小值为20（太透明会看不见），最大值为100
         JSlider slider = new JSlider(JSlider.HORIZONTAL, 20, 100, 80);
         // 设置主刻度间隔为10
@@ -145,7 +150,11 @@ public class LoafOnTheJob {
             float valueFloat = slider.getValue();
             jFrame.setOpacity(valueFloat / 100);
         });
-        return slider;
+        JPanel panel = new JPanel();
+        panel.setBorder(new EmptyBorder(0, 5, 0, 0));
+        panel.add(new JLabel("透明度："));
+        panel.add(slider);
+        return panel;
     }
 
     /**
