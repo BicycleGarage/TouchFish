@@ -17,6 +17,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -38,10 +39,17 @@ import java.util.stream.Collectors;
 public class LoafOnTheJob {
 
     /**
+     * 为兼容少数用户网络环境很差，本地预存一份节假日json
+     */
+    public static final String YEAR_2023_HOLIDAY_JSON = "{\"$schema\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json\",\"$id\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2023.json\",\"year\":2023,\"papers\":[\"http://www.gov.cn/zhengce/zhengceku/2022-12/08/content_5730844.htm\"],\"days\":[{\"name\":\"元旦\",\"date\":\"2022-12-31\",\"isOffDay\":true},{\"name\":\"元旦\",\"date\":\"2023-01-01\",\"isOffDay\":true},{\"name\":\"元旦\",\"date\":\"2023-01-02\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-21\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-22\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-23\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-24\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-25\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-26\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-27\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-28\",\"isOffDay\":false},{\"name\":\"春节\",\"date\":\"2023-01-29\",\"isOffDay\":false},{\"name\":\"清明节\",\"date\":\"2023-04-05\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-04-23\",\"isOffDay\":false},{\"name\":\"劳动节\",\"date\":\"2023-04-29\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-04-30\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-01\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-02\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-03\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-06\",\"isOffDay\":false},{\"name\":\"端午节\",\"date\":\"2023-06-22\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2023-06-23\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2023-06-24\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2023-06-25\",\"isOffDay\":false},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-09-29\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-09-30\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-01\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-02\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-03\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-04\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-05\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-06\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-07\",\"isOffDay\":false},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-08\",\"isOffDay\":false}]}";
+    public static final String YEAR_2024_HOLIDAY_JSON = "";
+    public static final String HOLIDAY_JSON_PREFIX = "YEAR_";
+    public static final String HOLIDAY_JSON_SUFFIX = "_HOLIDAY_JSON";
+
+    /**
      * 字体标红色号
      */
     public static final Color COLOR_RED = new Color(245, 74, 69);
-    public static final Color COLOR_BACKGROUND = new Color(0, 0, 0, 10);
     /**
      * 网络连接重试次数
      */
@@ -363,11 +371,34 @@ public class LoafOnTheJob {
      * @param year 年份 如："2022"
      * @return 节假日json
      */
-    public static JSONArray getHolidayOfYear(String year) {
-        // 获取指定年份的url
-        String url = getPath(year);
-        // 获取返回结果
-        String json = get(url);
+    public JSONArray getHolidayOfYear(String year){
+        String json;
+        // 先获取程序预存
+        String currentYearHolidayJsonFieldName = HOLIDAY_JSON_PREFIX + year + HOLIDAY_JSON_SUFFIX;
+        Class<? extends LoafOnTheJob> aClass = this.getClass();
+        Field declaredField = null;
+        try {
+            declaredField = aClass.getDeclaredField(currentYearHolidayJsonFieldName);
+            declaredField.setAccessible(true);
+            String currentYearHolidayJson = (String) declaredField.get(this);
+            if(currentYearHolidayJson != null && !"".equals(currentYearHolidayJson)) {
+                // 存在当前年份对应的程序内节假日json数据，直接使用
+                json = currentYearHolidayJson;
+            } else {
+                // 不存在当前年份对应的程序内节假日json数据，从网络获取
+                // 获取指定年份的url
+                String url = getPath(year);
+                // 获取返回结果
+                json = get(url);
+            }
+        } catch (NoSuchFieldException | SecurityException | IllegalAccessException ignored) {
+            // NoSuchFieldException表示没有当年对应的节假日json变量，要在代码中补充
+            // SecurityException通常不会出现，仅在项目中的类包名与Java已有库的包名重复才会报错
+            // IllegalAccessException不会出现，已经declaredField.setAccessible(true);
+
+            // 出现异常，则从网络获取节假日
+            json = get(getPath(year));
+        }
         // 解析返回结果
         JSONObject jsonObject = JSONObject.parseObject(json);
         return jsonObject.getJSONArray("days");
