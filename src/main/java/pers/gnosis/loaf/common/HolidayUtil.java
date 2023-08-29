@@ -66,7 +66,7 @@ public class HolidayUtil {
         baseDate.setHolidayList(holidays);
 
         baseDate.setNotOffHolidayDateList(holidays.stream()
-                .filter(Holiday::getOffDay)
+                .filter(holiday -> !holiday.getOffDay())
                 .map(Holiday::getDate)
                 .collect(Collectors.toList()));
 
@@ -76,7 +76,7 @@ public class HolidayUtil {
                 .collect(Collectors.toList()));
 
         Map<String, List<Holiday>> nameHolidayListMap = holidays.stream()
-                .filter(holiday -> !holiday.getOffDay())
+                .filter(Holiday::getOffDay)
                 .collect(Collectors.groupingBy(holiday -> holiday.getName() + "(" + holiday.getDate().getYear() + ")"));
         Map<String, Holiday> nameHolidayMap = new LinkedHashMap<>();
         for (Map.Entry<String, List<Holiday>> nameHolidayEntry : nameHolidayListMap.entrySet()) {
