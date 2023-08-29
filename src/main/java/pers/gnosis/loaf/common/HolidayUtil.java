@@ -66,12 +66,7 @@ public class HolidayUtil {
         baseDate.setHolidayList(holidays);
 
         baseDate.setNotOffHolidayDateList(holidays.stream()
-                .filter(holiday -> {
-                    int holidayDayOfWeekValue = holiday.getDate().getDayOfWeek().getValue();
-                    return (holidayDayOfWeekValue == PaydayUtil.SATURDAY_VALUE
-                            || holidayDayOfWeekValue == PaydayUtil.SUNDAY_VALUE)
-                            && !holiday.getOffDay();
-                })
+                .filter(Holiday::getOffDay)
                 .map(Holiday::getDate)
                 .collect(Collectors.toList()));
 
