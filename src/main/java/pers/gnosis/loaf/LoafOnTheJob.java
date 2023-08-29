@@ -1,7 +1,5 @@
 package pers.gnosis.loaf;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import pers.gnosis.loaf.common.CustomerPaydayButtonActionListener;
 import pers.gnosis.loaf.common.DateTimeUtil;
 import pers.gnosis.loaf.common.HolidayUtil;
@@ -15,24 +13,12 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author wangsiye
@@ -232,14 +218,17 @@ public class LoafOnTheJob {
      */
     private JPanel getLeftDayPanel() {
         LocalDate now = baseDate.getNow();
-        LocalDate nextWeekend = baseDate.getNextWeekend();
+        LocalDate nextSaturday = baseDate.getNextSaturday();
+        LocalDate nextSunday = baseDate.getNextSunday();
 
         JPanel panel3 = new JPanel();
         panel3.setBorder(new EmptyBorder(10, 10, 10, 10));
         Map<String, Holiday> nameHolidayMapNoOffDay = baseDate.getNameHolidayMapNoOffDay();
-        panel3.setLayout(new GridLayout(1 + nameHolidayMapNoOffDay.size(), 1));
+        panel3.setLayout(new GridLayout(3 + nameHolidayMapNoOffDay.size(), 1));
         List<JLabel> holidayLeftDaysLabelList = new ArrayList<>();
-        holidayLeftDaysLabelList.add(new JLabel("距离本周周末还有：" + now.until(nextWeekend, ChronoUnit.DAYS) + "天"));
+        holidayLeftDaysLabelList.add(new JLabel("距离本周周末："));
+        holidayLeftDaysLabelList.add(new JLabel("周六 还有" + now.until(nextSaturday, ChronoUnit.DAYS) + "天"));
+        holidayLeftDaysLabelList.add(new JLabel("周日 还有" + now.until(nextSunday, ChronoUnit.DAYS) + "天"));
         for (Holiday holiday : nameHolidayMapNoOffDay.values()) {
             holidayLeftDaysLabelList.add(new JLabel("距离" + holiday.getName() + "假期还有："
                     + now.until(holiday.getDate(), ChronoUnit.DAYS) + "天"));
@@ -283,10 +272,16 @@ public class LoafOnTheJob {
         JPanel panel1 = new JPanel();
         panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
         Map<String, Holiday> nameHolidayMapNoOffDay = baseDate.getNameHolidayMapNoOffDay();
-        panel1.setLayout(new GridLayout(2 + nameHolidayMapNoOffDay.size(), 1));
+        panel1.setLayout(new GridLayout(3 + nameHolidayMapNoOffDay.size(), 1));
         List<JLabel> holidayLabelList = new ArrayList<>();
         holidayLabelList.add(new JLabel("最近的假期："));
-        holidayLabelList.add(new JLabel("周末：" + baseDate.getNextWeekend().toString()));
+        List<LocalDate> notOffHolidayDateList = baseDate.getNotOffHolidayDateList();
+        LocalDate nextSaturday = baseDate.getNextSaturday();
+        LocalDate nextSunday = baseDate.getNextSunday();
+        holidayLabelList.add(new JLabel( "周六：" + nextSaturday.toString() +
+                (notOffHolidayDateList.contains(nextSaturday) ? "（补班）" : "")));
+        holidayLabelList.add(new JLabel("周日：" + nextSunday.toString() +
+                (notOffHolidayDateList.contains(nextSunday) ? "（补班）" : "")));
         for (Holiday holiday : nameHolidayMapNoOffDay.values()) {
             holidayLabelList.add(new JLabel(holiday.getName() + "：" + holiday.getDate().toString()));
         }

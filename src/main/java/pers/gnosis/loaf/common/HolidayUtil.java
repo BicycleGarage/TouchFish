@@ -52,7 +52,8 @@ public class HolidayUtil {
         BaseDateBO baseDate = loafOnTheJob.getBaseDate();
 
         baseDate.setNow(now);
-        baseDate.setNextWeekend(now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
+        baseDate.setNextSaturday(now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
+        baseDate.setNextSunday(now.with(TemporalAdjusters.next(DayOfWeek.SUNDAY)));
 
         JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()), loafOnTheJob);
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);
@@ -66,12 +67,7 @@ public class HolidayUtil {
         baseDate.setHolidayList(holidays);
 
         baseDate.setNotOffHolidayDateList(holidays.stream()
-                .filter(holiday -> {
-                    int holidayDayOfWeekValue = holiday.getDate().getDayOfWeek().getValue();
-                    return (holidayDayOfWeekValue == PaydayUtil.SATURDAY_VALUE
-                            || holidayDayOfWeekValue == PaydayUtil.SUNDAY_VALUE)
-                            && !holiday.getOffDay();
-                })
+                .filter(holiday -> !holiday.getOffDay())
                 .map(Holiday::getDate)
                 .collect(Collectors.toList()));
 
@@ -81,7 +77,7 @@ public class HolidayUtil {
                 .collect(Collectors.toList()));
 
         Map<String, List<Holiday>> nameHolidayListMap = holidays.stream()
-                .filter(holiday -> !holiday.getOffDay())
+                .filter(Holiday::getOffDay)
                 .collect(Collectors.groupingBy(holiday -> holiday.getName() + "(" + holiday.getDate().getYear() + ")"));
         Map<String, Holiday> nameHolidayMap = new LinkedHashMap<>();
         for (Map.Entry<String, List<Holiday>> nameHolidayEntry : nameHolidayListMap.entrySet()) {
