@@ -130,10 +130,8 @@ public class HolidayUtil {
         String json;
         // 先获取程序预存
         String currentYearHolidayJsonFieldName = HOLIDAY_JSON_PREFIX + year + HOLIDAY_JSON_SUFFIX;
-        Class<? extends LoafOnTheJob> aClass = loafOnTheJob.getClass();
-        Field declaredField = null;
         try {
-            declaredField = aClass.getDeclaredField(currentYearHolidayJsonFieldName);
+            Field declaredField = HolidayUtil.class.getField(currentYearHolidayJsonFieldName);
             declaredField.setAccessible(true);
             String currentYearHolidayJson = (String) declaredField.get(loafOnTheJob);
             if(currentYearHolidayJson != null && !"".equals(currentYearHolidayJson)) {
