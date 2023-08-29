@@ -52,7 +52,8 @@ public class HolidayUtil {
         BaseDateBO baseDate = loafOnTheJob.getBaseDate();
 
         baseDate.setNow(now);
-        baseDate.setNextWeekend(now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
+        baseDate.setNextSaturday(now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
+        baseDate.setNextSunday(now.with(TemporalAdjusters.next(DayOfWeek.SUNDAY)));
 
         JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()), loafOnTheJob);
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);

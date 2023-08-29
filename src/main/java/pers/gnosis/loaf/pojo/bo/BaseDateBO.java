@@ -11,7 +11,8 @@ import java.util.Map;
  */
 public class BaseDateBO {
     private LocalDate now;
-    private LocalDate nextWeekend;
+    private LocalDate nextSaturday;
+    private LocalDate nextSunday;
     /**
      * 今年节假日，同时包含放假、补班日（如周六日本应双休，但由于调休机制需要补班，其isOffDay=false）
      */
@@ -69,11 +70,19 @@ public class BaseDateBO {
         this.now = now;
     }
 
-    public LocalDate getNextWeekend() {
-        return nextWeekend;
+    public LocalDate getNextSaturday() {
+        return nextSaturday;
     }
 
-    public void setNextWeekend(LocalDate nextWeekend) {
-        this.nextWeekend = nextWeekend;
+    public void setNextSaturday(LocalDate nextSaturday) {
+        this.nextSaturday = nextSaturday;
+    }
+
+    public LocalDate getNextSunday() {
+        return nextSunday;
+    }
+
+    public void setNextSunday(LocalDate nextSunday) {
+        this.nextSunday = nextSunday;
     }
 }
