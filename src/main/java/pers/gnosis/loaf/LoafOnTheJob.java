@@ -203,11 +203,16 @@ public class LoafOnTheJob {
         customerPaydayButton.addActionListener(new CustomerPaydayButtonActionListener(
                 daysToPaydayPanel, customerPaydayTextField, baseDate));
         JButton customerPaydayClearButton = new JButton("清除");
-        customerPaydayClearButton.addActionListener(e -> daysToPaydayPanel.removeAll());
+        customerPaydayClearButton.addActionListener(e -> {
+            daysToPaydayPanel.removeAll();
+            daysToPaydayPanel.revalidate();
+            daysToPaydayPanel.repaint();
+        });
 
         inputPaydayPanel.add(customerPaydayLabel);
         inputPaydayPanel.add(customerPaydayTextField);
         inputPaydayPanel.add(customerPaydayButton);
+        inputPaydayPanel.add(customerPaydayClearButton);
 
         panel.add(inputPaydayPanel);
         panel.add(daysToPaydayPanel);
