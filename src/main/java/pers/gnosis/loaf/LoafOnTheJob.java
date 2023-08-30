@@ -13,12 +13,16 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author wangsiye
@@ -40,8 +44,16 @@ public class LoafOnTheJob {
 
     public static void main(String[] args) {
         LoafOnTheJob loafOnTheJob = new LoafOnTheJob(LocalDate.now());
-        BaseDateBO baseDate = loafOnTheJob.getBaseDate();
 
+        loafOnTheJob.showFrame();
+    }
+
+    /**
+     * 展示窗口主逻辑
+     */
+    private void showFrame() {
+        LoafOnTheJob loafOnTheJob = this;
+        BaseDateBO baseDate = loafOnTheJob.getBaseDate();
         // 窗体初始化
         int height = baseDate.getNameHolidayMapNoOffDay().size() >= 5 ? 1050 : 600;
         JFrame jf = new JFrame("摸鱼小助手");
@@ -49,14 +61,8 @@ public class LoafOnTheJob {
         jf.setMinimumSize(new Dimension(400, height));
         jf.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        // 添加主要功能的容器
-        jf.add(loafOnTheJob.getCloseButtonAndAlwaysOnTopCheckBoxPanel(jf));
-        jf.add(loafOnTheJob.getOpacitySliderPanel(jf));
-        jf.add(loafOnTheJob.getHolidayPanel());
-        jf.add(loafOnTheJob.getNoticePanel());
-        jf.add(loafOnTheJob.getPayday());
-        jf.add(loafOnTheJob.getLeftDayPanel());
-        jf.add(loafOnTheJob.getCustomerPaydayPanel());
+        // 添加主要功能
+        initFrame(loafOnTheJob, jf);
 
         // 设置窗口大小
         jf.setSize(250, 250);
@@ -67,6 +73,55 @@ public class LoafOnTheJob {
         // 显示窗口，前面创建的信息都在内存中，通过 jf.setVisible(true) 把内存中的窗口显示在屏幕上。
         jf.setVisible(true);
 
+    }
+
+    /**
+     * 填充frame中主要内容，如按钮、节假日、发薪日、距离天数等
+     * @param loafOnTheJob 程序主对象
+     * @param jf 待填充的frame
+     */
+    private void initFrame(LoafOnTheJob loafOnTheJob, JFrame jf) {
+        jf.add(loafOnTheJob.getCloseButtonAndAlwaysOnTopCheckBoxPanel(jf));
+        jf.add(loafOnTheJob.getOpacitySliderPanel(jf));
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(4,1));
+        makeUpMainPanel(loafOnTheJob, mainPanel);
+        jf.add(mainPanel);
+
+        jf.add(loafOnTheJob.getCustomerPaydayPanel());
+
+        // 每天0点更新mainPanel内容
+        LocalDateTime todayZeroClock = baseDate.getNow().atStartOfDay();
+        LocalDateTime tomorrowZeroClock = todayZeroClock.plusDays(1L);
+        LocalDateTime now = LocalDateTime.now();
+        long delayMillis = Duration.between(now, tomorrowZeroClock).toMillis() + 1;
+
+        java.util.Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                HolidayUtil.initHolidayData(LocalDate.now(), loafOnTheJob);
+
+                mainPanel.removeAll();
+                makeUpMainPanel(loafOnTheJob, mainPanel);
+                mainPanel.revalidate();
+                mainPanel.repaint();
+                System.out.println("刷新啦");
+            }
+        }, delayMillis, 24*60*60*1000);
+    }
+
+    /**
+     * 填充mainPanel中主要内容，节假日、发薪日、距离天数等
+     * @param loafOnTheJob 程序主对象
+     * @param mainPanel 主容器
+     */
+    private void makeUpMainPanel(LoafOnTheJob loafOnTheJob, JPanel mainPanel) {
+        mainPanel.add(loafOnTheJob.getHolidayPanel());
+        mainPanel.add(loafOnTheJob.getNoticePanel());
+        mainPanel.add(loafOnTheJob.getPayday());
+        mainPanel.add(loafOnTheJob.getLeftDayPanel());
     }
 
     /**
@@ -200,10 +255,17 @@ public class LoafOnTheJob {
         JButton customerPaydayButton = new JButton("确定");
         customerPaydayButton.addActionListener(new CustomerPaydayButtonActionListener(
                 daysToPaydayPanel, customerPaydayTextField, baseDate));
+        JButton customerPaydayClearButton = new JButton("清除");
+        customerPaydayClearButton.addActionListener(e -> {
+            daysToPaydayPanel.removeAll();
+            daysToPaydayPanel.revalidate();
+            daysToPaydayPanel.repaint();
+        });
 
         inputPaydayPanel.add(customerPaydayLabel);
         inputPaydayPanel.add(customerPaydayTextField);
         inputPaydayPanel.add(customerPaydayButton);
+        inputPaydayPanel.add(customerPaydayClearButton);
 
         panel.add(inputPaydayPanel);
         panel.add(daysToPaydayPanel);

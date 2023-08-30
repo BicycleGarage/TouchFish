@@ -55,10 +55,10 @@ public class HolidayUtil {
         baseDate.setNextSaturday(now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
         baseDate.setNextSunday(now.with(TemporalAdjusters.next(DayOfWeek.SUNDAY)));
 
-        JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()), loafOnTheJob);
+        JSONArray holidayOfYearJson = getHolidayOfYear(String.valueOf(now.getYear()));
         List<Holiday> holidays = holidayOfYearJson.toJavaList(Holiday.class);
         if (now.getMonthValue() >= DateTimeUtil.NOVEMBER) {
-            JSONArray holidayOfNextYearJson = getHolidayOfYear(String.valueOf(now.getYear() + 1), loafOnTheJob);
+            JSONArray holidayOfNextYearJson = getHolidayOfYear(String.valueOf(now.getYear() + 1));
             List<Holiday> nextYearHolidays = holidayOfNextYearJson.toJavaList(Holiday.class);
             if (nextYearHolidays != null && nextYearHolidays.size() > 0) {
                 holidays.addAll(nextYearHolidays);
@@ -123,17 +123,16 @@ public class HolidayUtil {
      * 获取指定年份的节假日信息
      *
      * @param year 年份 如："2022"
-     * @param loafOnTheJob
      * @return 节假日json
      */
-    public static JSONArray getHolidayOfYear(String year, LoafOnTheJob loafOnTheJob){
+    public static JSONArray getHolidayOfYear(String year){
         String json;
         // 先获取程序预存
         String currentYearHolidayJsonFieldName = HOLIDAY_JSON_PREFIX + year + HOLIDAY_JSON_SUFFIX;
         try {
-            Field declaredField = HolidayUtil.class.getField(currentYearHolidayJsonFieldName);
-            declaredField.setAccessible(true);
-            String currentYearHolidayJson = (String) declaredField.get(loafOnTheJob);
+            Field field = HolidayUtil.class.getField(currentYearHolidayJsonFieldName);
+            field.setAccessible(true);
+            String currentYearHolidayJson = (String) field.get(null);
             if(currentYearHolidayJson != null && !"".equals(currentYearHolidayJson)) {
                 // 存在当前年份对应的程序内节假日json数据，直接使用
                 json = currentYearHolidayJson;
