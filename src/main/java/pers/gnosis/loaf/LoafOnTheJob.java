@@ -1,10 +1,6 @@
 package pers.gnosis.loaf;
 
-import pers.gnosis.loaf.common.CustomerPaydayButtonActionListener;
-import pers.gnosis.loaf.common.DateTimeUtil;
-import pers.gnosis.loaf.common.HolidayUtil;
-import pers.gnosis.loaf.common.NumberTextField;
-import pers.gnosis.loaf.common.PaydayUtil;
+import pers.gnosis.loaf.common.*;
 import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
@@ -219,18 +215,37 @@ public class LoafOnTheJob {
      * @return 获取发薪日剩余天数JPanel
      */
     private JPanel getPayday() {
-        LocalDate now = baseDate.getNow();
-        List<LocalDate> paydayList = PaydayUtil.doGetPayday(baseDate);
 
-        JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        List<JLabel> labelList = PaydayUtil.getDaysToPaydayLabel(now, paydayList);
-        panel.setLayout(new GridLayout(labelList.size(), 1));
-        for (JLabel jLabel : labelList) {
-            panel.add(jLabel);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 1));
+        JPanel paydayPanel = new JPanel();
+
+        JLabel label1=new JLabel("发薪日为假期时：");
+        JRadioButton rb1=new JRadioButton("提前发薪");
+        rb1.addActionListener(new AdvancePaydayButtonActionListener(paydayPanel, baseDate, PaydayUtil.ADVANCE_PAYDAY));
+        JRadioButton rb2=new JRadioButton("滞后发薪");
+        rb2.addActionListener(new AdvancePaydayButtonActionListener(paydayPanel, baseDate, PaydayUtil.DELAY_PAYDAY));
+        if(baseDate.isAdvancePayday()) {
+            rb1.setSelected(true);
+        } else {
+            rb2.setSelected(true);
         }
+        ButtonGroup group=new ButtonGroup();
+        group.add(rb1);
+        group.add(rb2);
+        buttonPanel.add(label1);
+        buttonPanel.add(rb1);
+        buttonPanel.add(rb2);
+        mainPanel.add(buttonPanel);
 
-        return panel;
+        PaydayUtil.initPaydayPanel(baseDate, paydayPanel);
+
+        mainPanel.add(paydayPanel);
+
+        return mainPanel;
     }
 
     /**

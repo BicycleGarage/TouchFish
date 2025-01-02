@@ -29,6 +29,10 @@ public class BaseDateBO {
      * 放假且不补班的假期日期
      */
     private List<LocalDate> holidayDateList;
+    /*
+    是否提前发薪，默认否
+     */
+    private boolean advancePayday = false;
 
     public List<Holiday> getHolidayList() {
         return holidayList;
@@ -84,5 +88,13 @@ public class BaseDateBO {
 
     public void setNextSunday(LocalDate nextSunday) {
         this.nextSunday = nextSunday;
+    }
+
+    public boolean isAdvancePayday() {
+        return advancePayday;
+    }
+
+    public void setAdvancePayday(boolean advancePayday) {
+        this.advancePayday = advancePayday;
     }
 }

@@ -3,6 +3,7 @@ package pers.gnosis.loaf.common;
 import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -27,6 +28,8 @@ public class PaydayUtil {
     public static final int SATURDAY_VALUE = DayOfWeek.SATURDAY.getValue();
     public static final int SUNDAY_VALUE = DayOfWeek.SUNDAY.getValue();
     public static final DecimalFormat FORMAT = new DecimalFormat("00");
+    public static final boolean ADVANCE_PAYDAY = true;
+    public static final boolean DELAY_PAYDAY = false;
 
 
     /**
@@ -76,7 +79,7 @@ public class PaydayUtil {
         }
 
         return doGetWorkDayPayday(LocalDate.of(year, month, paydayDayOfMonth),
-                baseDate.getNotOffHolidayDateList(), baseDate.getHolidayDateList());
+                baseDate.getNotOffHolidayDateList(), baseDate.getHolidayDateList(), baseDate.isAdvancePayday());
     }
 
     /**
@@ -85,23 +88,32 @@ public class PaydayUtil {
      * @param payday                未提前到工作日的发薪日
      * @param notOffHolidayDateList 补班的周六日日期
      * @param holidayDateList       放假且不补班的假期日期
+     * @param advancePayday         是否提前发薪
      * @return 提前到工作日的发薪日
      */
     private static LocalDate doGetWorkDayPayday(LocalDate payday,
                                                 List<LocalDate> notOffHolidayDateList,
-                                                List<LocalDate> holidayDateList) {
+                                                List<LocalDate> holidayDateList, boolean advancePayday) {
         int paydayDayOfWeekValue = payday.getDayOfWeek().getValue();
         if (SATURDAY_VALUE == paydayDayOfWeekValue || SUNDAY_VALUE == paydayDayOfWeekValue) {
             if (notOffHolidayDateList.contains(payday)) {
                 return payday;
             } else {
-                payday = payday.minusDays(1L);
-                return doGetWorkDayPayday(payday, notOffHolidayDateList, holidayDateList);
+                if(advancePayday) {
+                    payday = payday.minusDays(1L);
+                } else {
+                    payday = payday.plusDays(1L);
+                }
+                return doGetWorkDayPayday(payday, notOffHolidayDateList, holidayDateList, advancePayday);
             }
         } else {
             if (holidayDateList.contains(payday)) {
-                payday = payday.minusDays(1L);
-                return doGetWorkDayPayday(payday, notOffHolidayDateList, holidayDateList);
+                if(advancePayday) {
+                    payday = payday.minusDays(1L);
+                } else {
+                    payday = payday.plusDays(1L);
+                }
+                return doGetWorkDayPayday(payday, notOffHolidayDateList, holidayDateList, advancePayday);
             } else {
                 return payday;
             }
@@ -130,5 +142,19 @@ public class PaydayUtil {
                     + now.until(payday, ChronoUnit.DAYS) + "天"));
         }
         return labelList;
+    }
+
+    /**
+     * 初始化发薪日展示
+     * @param baseDate 基本数据
+     * @param paydayPanel 发薪日展示panel
+     */
+    public static void initPaydayPanel(BaseDateBO baseDate, JPanel paydayPanel) {
+        List<LocalDate> paydayList = PaydayUtil.doGetPayday(baseDate);
+        List<JLabel> labelList = PaydayUtil.getDaysToPaydayLabel(baseDate.getNow(), paydayList);
+        paydayPanel.setLayout(new GridLayout(labelList.size() + 1, 1));
+        for (JLabel jLabel : labelList) {
+            paydayPanel.add(jLabel);
+        }
     }
 }
