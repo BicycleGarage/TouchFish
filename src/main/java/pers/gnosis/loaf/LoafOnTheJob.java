@@ -122,6 +122,7 @@ public class LoafOnTheJob {
         mainPanel.add(loafOnTheJob.getNoticePanel());
         mainPanel.add(loafOnTheJob.getHolidayPanel());
         mainPanel.add(loafOnTheJob.getLeftDayPanel());
+        // todo 追加增加其他发薪日功能。与自定义发薪日有一定重叠，要设计
         mainPanel.add(loafOnTheJob.getPayday());
         mainPanel.add(loafOnTheJob.getCustomerPaydayPanel());
     }
