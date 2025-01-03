@@ -9,7 +9,6 @@ import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -31,17 +30,10 @@ import java.util.stream.Collectors;
 public class HolidayUtil {
 
     /**
-     * 为兼容少数用户网络环境很差，本地预存一份节假日json
-     */
-    public static final String YEAR_2023_HOLIDAY_JSON = "{\"$schema\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json\",\"$id\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2023.json\",\"year\":2023,\"papers\":[\"http://www.gov.cn/zhengce/zhengceku/2022-12/08/content_5730844.htm\"],\"days\":[{\"name\":\"元旦\",\"date\":\"2022-12-31\",\"isOffDay\":true},{\"name\":\"元旦\",\"date\":\"2023-01-01\",\"isOffDay\":true},{\"name\":\"元旦\",\"date\":\"2023-01-02\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-21\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-22\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-23\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-24\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-25\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-26\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-27\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2023-01-28\",\"isOffDay\":false},{\"name\":\"春节\",\"date\":\"2023-01-29\",\"isOffDay\":false},{\"name\":\"清明节\",\"date\":\"2023-04-05\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-04-23\",\"isOffDay\":false},{\"name\":\"劳动节\",\"date\":\"2023-04-29\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-04-30\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-01\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-02\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-03\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2023-05-06\",\"isOffDay\":false},{\"name\":\"端午节\",\"date\":\"2023-06-22\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2023-06-23\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2023-06-24\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2023-06-25\",\"isOffDay\":false},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-09-29\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-09-30\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-01\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-02\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-03\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-04\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-05\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-06\",\"isOffDay\":true},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-07\",\"isOffDay\":false},{\"name\":\"中秋节、国庆节\",\"date\":\"2023-10-08\",\"isOffDay\":false}]}";
-    public static final String YEAR_2024_HOLIDAY_JSON = "{\"$schema\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json\",\"$id\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2024.json\",\"year\":2024,\"papers\":[\"https://www.gov.cn/zhengce/zhengceku/202310/content_6911528.htm\"],\"days\":[{\"name\":\"元旦\",\"date\":\"2024-01-01\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-04\",\"isOffDay\":false},{\"name\":\"春节\",\"date\":\"2024-02-10\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-11\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-12\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-13\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-14\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-15\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-16\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-17\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2024-02-18\",\"isOffDay\":false},{\"name\":\"清明节\",\"date\":\"2024-04-04\",\"isOffDay\":true},{\"name\":\"清明节\",\"date\":\"2024-04-05\",\"isOffDay\":true},{\"name\":\"清明节\",\"date\":\"2024-04-06\",\"isOffDay\":true},{\"name\":\"清明节\",\"date\":\"2024-04-07\",\"isOffDay\":false},{\"name\":\"劳动节\",\"date\":\"2024-04-28\",\"isOffDay\":false},{\"name\":\"劳动节\",\"date\":\"2024-05-01\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2024-05-02\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2024-05-03\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2024-05-04\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2024-05-05\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2024-05-11\",\"isOffDay\":false},{\"name\":\"端午节\",\"date\":\"2024-06-10\",\"isOffDay\":true},{\"name\":\"中秋节\",\"date\":\"2024-09-14\",\"isOffDay\":false},{\"name\":\"中秋节\",\"date\":\"2024-09-15\",\"isOffDay\":true},{\"name\":\"中秋节\",\"date\":\"2024-09-16\",\"isOffDay\":true},{\"name\":\"中秋节\",\"date\":\"2024-09-17\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-09-29\",\"isOffDay\":false},{\"name\":\"国庆节\",\"date\":\"2024-10-01\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-02\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-03\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-04\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-05\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-06\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-07\",\"isOffDay\":true},{\"name\":\"国庆节\",\"date\":\"2024-10-12\",\"isOffDay\":false}]}";
-    public static final String YEAR_2025_HOLIDAY_JSON = "{\"$schema\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json\",\"$id\":\"https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2025.json\",\"year\":2025,\"papers\":[\"https://www.gov.cn/zhengce/zhengceku/202411/content_6986383.htm\"],\"days\":[{\"name\":\"元旦\",\"date\":\"2025-01-01\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-01-26\",\"isOffDay\":false},{\"name\":\"春节\",\"date\":\"2025-01-28\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-01-29\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-01-30\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-01-31\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-02-01\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-02-02\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-02-03\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-02-04\",\"isOffDay\":true},{\"name\":\"春节\",\"date\":\"2025-02-08\",\"isOffDay\":false},{\"name\":\"清明节\",\"date\":\"2025-04-04\",\"isOffDay\":true},{\"name\":\"清明节\",\"date\":\"2025-04-05\",\"isOffDay\":true},{\"name\":\"清明节\",\"date\":\"2025-04-06\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2025-04-27\",\"isOffDay\":false},{\"name\":\"劳动节\",\"date\":\"2025-05-01\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2025-05-02\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2025-05-03\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2025-05-04\",\"isOffDay\":true},{\"name\":\"劳动节\",\"date\":\"2025-05-05\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2025-05-31\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2025-06-01\",\"isOffDay\":true},{\"name\":\"端午节\",\"date\":\"2025-06-02\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-09-28\",\"isOffDay\":false},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-01\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-02\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-03\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-04\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-05\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-06\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-07\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-08\",\"isOffDay\":true},{\"name\":\"国庆节、中秋节\",\"date\":\"2025-10-11\",\"isOffDay\":false}]}";
-    public static final String HOLIDAY_JSON_PREFIX = "YEAR_";
-    public static final String HOLIDAY_JSON_SUFFIX = "_HOLIDAY_JSON";
-    /**
      * 网络连接重试次数
      */
     public static final int RETRY_TIME = 2;
+    public static final String HOLIDAY_JSON_SUFFIX = "_Holiday.json";
 
     /**
      * 初始化节假日数：今年的节假日集合holidayList，名称-节假日map（不含补班日） nameHolidayMapNoOffDay
@@ -119,7 +111,9 @@ public class HolidayUtil {
         // 2023-04-04 从2022-08-05开始，要求登录才能下载开源仓库的文件。
         // return "https://cdn.jsdelivr.net/gh/NateScarlet/holiday-cn@master/" + year + ".json";
         // ghproxy 加速镜像
-        return "https://ghproxy.com/https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/" + year + ".json";
+//        return "https://ghproxy.com/https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/" + year + ".json";
+        // 2025-01-03 改用自己的腾讯云对象存储
+        return "https://vuper-1303948677.cos.ap-guangzhou.myqcloud.com/" + year + "_Holiday.json";
     }
 
     /**
@@ -131,26 +125,12 @@ public class HolidayUtil {
     public static JSONArray getHolidayOfYear(String year){
         String json;
         // 先获取程序预存
-        String currentYearHolidayJsonFieldName = HOLIDAY_JSON_PREFIX + year + HOLIDAY_JSON_SUFFIX;
         try {
-            Field field = HolidayUtil.class.getField(currentYearHolidayJsonFieldName);
-            field.setAccessible(true);
-            String currentYearHolidayJson = (String) field.get(null);
-            if(currentYearHolidayJson != null && !currentYearHolidayJson.isEmpty()) {
-                // 存在当前年份对应的程序内节假日json数据，直接使用
-                json = currentYearHolidayJson;
-            } else {
-                // 不存在当前年份对应的程序内节假日json数据，从网络获取
-                // 获取指定年份的url
-                String url = getPath(year);
-                // 获取返回结果
-                json = get(url);
-            }
-        } catch (NoSuchFieldException | SecurityException | IllegalAccessException ignored) {
-            // NoSuchFieldException表示没有当年对应的节假日json变量，要在代码中补充
-            // SecurityException通常不会出现，仅在项目中的类包名与Java已有库的包名重复才会报错
-            // IllegalAccessException不会出现，已经declaredField.setAccessible(true);
+            // 读取 JSON 文件内容为字符串
+            String fileName = year + HolidayUtil.HOLIDAY_JSON_SUFFIX;
+            json = ResourceFileReader.readFileAsString(fileName);
 
+        } catch (Exception e) {
             // 出现异常，则从网络获取节假日
             json = get(getPath(year));
         }
