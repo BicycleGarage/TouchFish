@@ -9,10 +9,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author wangsiye
@@ -154,6 +153,9 @@ public class PaydayUtil {
      */
     public static void initPaydayPanel(BaseDateBO baseDate, JPanel paydayPanel) {
         List<LocalDate> paydayList = PaydayUtil.doGetPayday(baseDate);
+        paydayList = paydayList.stream()
+                .sorted()  // 默认升序排序
+                .collect(Collectors.toList());
         List<JLabel> labelList = PaydayUtil.getDaysToPaydayLabel(baseDate.getNow(), paydayList);
         paydayPanel.setLayout(new GridLayout(labelList.size() + 1, 1));
         for (JLabel jLabel : labelList) {
@@ -169,5 +171,19 @@ public class PaydayUtil {
         return new HashMap<Integer, Integer>() {{
             put(PaydayUtil.DEFAULT_PAYDAY, PaydayUtil.DEFAULT_PAYDAY);
         }};
+    }
+
+    /**
+     * 初始化展示展示发薪日列表的label
+     * @param baseDate 基本数据
+     * @return JLabel 发薪日列表的label
+     */
+    public static JLabel initPaydayListLabel(BaseDateBO baseDate) {
+        return new JLabel("发薪日：每月"
+                + (baseDate.getPaydayMap().keySet().isEmpty()
+                    ? "  "
+                    : baseDate.getPaydayMap().keySet()
+                        .stream().map(String::valueOf).collect(Collectors.joining("日、")))
+                + "日");
     }
 }

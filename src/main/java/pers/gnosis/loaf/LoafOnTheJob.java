@@ -2,7 +2,8 @@ package pers.gnosis.loaf;
 
 import pers.gnosis.loaf.common.*;
 import pers.gnosis.loaf.listener.AdvancePaydayButtonActionListener;
-import pers.gnosis.loaf.listener.CustomerPaydayButtonActionListener;
+import pers.gnosis.loaf.listener.CustomerPaydayAddButtonActionListener;
+import pers.gnosis.loaf.listener.CustomerPaydayClearButtonActionListener;
 import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
@@ -16,11 +17,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * @author wangsiye
@@ -32,7 +31,7 @@ public class LoafOnTheJob {
      */
     public static final Color COLOR_RED = new Color(245, 74, 69);
 
-    private BaseDateBO baseDate;
+    private final BaseDateBO baseDate;
 
     public LoafOnTheJob(LocalDate now) {
         this.baseDate = new BaseDateBO();
@@ -53,7 +52,7 @@ public class LoafOnTheJob {
         LoafOnTheJob loafOnTheJob = this;
         BaseDateBO baseDate = loafOnTheJob.getBaseDate();
         // 窗体初始化
-        int height = baseDate.getNameHolidayMapNoOffDay().size() >= 5 ? 1050 : 600;
+        int height = baseDate.getNameHolidayMapNoOffDay().size() >= 5 ? 850 : 600;
         JFrame jf = new JFrame("摸鱼小助手");
         jf.setPreferredSize(new Dimension(400, height));
         jf.setMinimumSize(new Dimension(400, height));
@@ -88,7 +87,7 @@ public class LoafOnTheJob {
         topSliderPanel.add(loafOnTheJob.getOpacitySliderPanel(jf));
         jf.add(topSliderPanel);
 
-        JPanel mainPanel = GUIUtil.getMyjPanelSingleColumn(5, false);
+        JPanel mainPanel = GUIUtil.getMainPanel();
         makeUpMainPanel(loafOnTheJob, mainPanel);
         jf.add(mainPanel);
 
@@ -124,7 +123,6 @@ public class LoafOnTheJob {
         mainPanel.add(loafOnTheJob.getLeftDayPanel());
         // todo 追加增加其他发薪日功能。与自定义发薪日有一定重叠，要设计
         mainPanel.add(loafOnTheJob.getPayday());
-        mainPanel.add(loafOnTheJob.getCustomerPaydayPanel());
     }
 
     /**
@@ -226,6 +224,11 @@ public class LoafOnTheJob {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         JPanel buttonPanel = GUIUtil.getMyjPanelSingleColumn(1, true);
+        JPanel showPaydayPanel = GUIUtil.getMyjPanelSingleColumn(1, true);
+        JPanel inputPaydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
+        // 不明原因往右了一点
+        // 原因不是flowlayout的统一5左边距导致，因为滑块panel也为flowlayout，没有往右
+        inputPaydayPanel.setBorder(new EmptyBorder(0, -5, 0, 0));
         JPanel paydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
 
         JLabel label1=new JLabel("发薪日为假期时：");
@@ -246,50 +249,31 @@ public class LoafOnTheJob {
         buttonPanel.add(rb2);
         mainPanel.add(buttonPanel);
 
-        PaydayUtil.initPaydayPanel(baseDate, paydayPanel);
+        JLabel paydayListLabel = PaydayUtil.initPaydayListLabel(baseDate);
+        showPaydayPanel.add(paydayListLabel);
+        mainPanel.add(showPaydayPanel);
 
-        mainPanel.add(paydayPanel);
-
-        return mainPanel;
-    }
-
-    /**
-     * 创建自定义发薪日容器
-     * @return 自定义发薪日容器
-     */
-    private JPanel getCustomerPaydayPanel() {
-        JPanel panel = GUIUtil.getMyjPanelSingleColumn(2, false);
-
-        JPanel inputPaydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
-        // 不明原因往右了一点
-        // 原因不是flowlayout的统一5左边距导致，因为滑块panel也为flowlayout，没有往右
-        inputPaydayPanel.setBorder(new EmptyBorder(0, -5, 0, 0));
-        JPanel daysToPaydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
-
-        JLabel customerPaydayLabel = new JLabel("自定义发薪日：");
-
+        JLabel customerPaydayLabel = new JLabel("添加发薪日：");
         JTextField customerPaydayTextField = new JTextField(4);
         customerPaydayTextField.setDocument(new NumberTextField());
-
-        JButton customerPaydayButton = new JButton("确定");
-        customerPaydayButton.addActionListener(new CustomerPaydayButtonActionListener(
-                daysToPaydayPanel, customerPaydayTextField, baseDate));
+        JButton customerPaydayButton = new JButton("添加");
+        customerPaydayButton.addActionListener(new CustomerPaydayAddButtonActionListener(
+                paydayPanel, customerPaydayTextField, baseDate));
         JButton customerPaydayClearButton = new JButton("清除");
-        customerPaydayClearButton.addActionListener(e -> {
-            daysToPaydayPanel.removeAll();
-            daysToPaydayPanel.revalidate();
-            daysToPaydayPanel.repaint();
-        });
+        customerPaydayClearButton.addActionListener(new CustomerPaydayClearButtonActionListener(
+                paydayPanel, showPaydayPanel, paydayListLabel, baseDate));
 
         inputPaydayPanel.add(customerPaydayLabel);
         inputPaydayPanel.add(customerPaydayTextField);
         inputPaydayPanel.add(customerPaydayButton);
         inputPaydayPanel.add(customerPaydayClearButton);
+        mainPanel.add(inputPaydayPanel);
 
-        panel.add(inputPaydayPanel);
-        panel.add(daysToPaydayPanel);
+        PaydayUtil.initPaydayPanel(baseDate, paydayPanel);
 
-        return panel;
+        mainPanel.add(paydayPanel);
+
+        return mainPanel;
     }
 
     /**
@@ -371,7 +355,4 @@ public class LoafOnTheJob {
         return baseDate;
     }
 
-    public void setBaseDate(BaseDateBO baseDate) {
-        this.baseDate = baseDate;
-    }
 }

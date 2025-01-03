@@ -55,4 +55,14 @@ public class GUIUtil {
             panel.setBorder(new EmptyBorder(0, 0, 0, 0));
         }
     }
+
+    /**
+     * frame内最外层panel
+     * @return JPanel
+     */
+    public static JPanel getMainPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        return panel;
+    }
 }

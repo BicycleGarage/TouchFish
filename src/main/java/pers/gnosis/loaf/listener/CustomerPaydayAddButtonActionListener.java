@@ -4,60 +4,49 @@ import pers.gnosis.loaf.common.PaydayUtil;
 import pers.gnosis.loaf.pojo.bo.BaseDateBO;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author wangsiye
  */
-public class CustomerPaydayButtonActionListener implements ActionListener {
+public class CustomerPaydayAddButtonActionListener implements ActionListener {
 
     public static final int MAX_DAY_OF_MONTH = 31;
-    private final JPanel daysToPaydayPanel;
+    private final JPanel paydayPanel;
     private final JTextField customerPaydayTextField;
-    private final BaseDateBO baseDateBO;
+    private final BaseDateBO baseDate;
 
-    public CustomerPaydayButtonActionListener(JPanel daysToPaydayPanel,
-                                              JTextField customerPaydayTextField,
-                                              BaseDateBO baseDate) {
-        this.daysToPaydayPanel = daysToPaydayPanel;
+    public CustomerPaydayAddButtonActionListener(JPanel paydayPanel,
+                                                 JTextField customerPaydayTextField,
+                                                 BaseDateBO baseDate) {
+        this.paydayPanel = paydayPanel;
         this.customerPaydayTextField = customerPaydayTextField;
-        this.baseDateBO = baseDate;
+        this.baseDate = baseDate;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         // 清空上次的自定义发薪日label
-        daysToPaydayPanel.removeAll();
+        paydayPanel.removeAll();
 
         String customerPaydayTextFieldText = customerPaydayTextField.getText();
         if (customerPaydayTextFieldText == null || customerPaydayTextFieldText.isEmpty()) {
             return;
         }
         int customerPaydayDayOfMonth = getNormalCustomerPayday(customerPaydayTextFieldText);
-
-        LocalDate now = baseDateBO.getNow();
-        LocalDate nextMonthNow = now.plusMonths(1L);
-
-        LocalDate customerCurrentMonthPayday = PaydayUtil.getWorkDayPayday(
-                now.getYear(), now.getMonthValue(), customerPaydayDayOfMonth, baseDateBO);
-        LocalDate customerNextMonthPayday = PaydayUtil.getWorkDayPayday(
-                nextMonthNow.getYear(), nextMonthNow.getMonthValue(), customerPaydayDayOfMonth, baseDateBO);
-        List<JLabel> daysToPaydayLabelList = PaydayUtil.getDaysToPaydayLabel(
-                now, Arrays.asList(customerCurrentMonthPayday, customerNextMonthPayday));
-        daysToPaydayPanel.setLayout(new GridLayout(daysToPaydayLabelList.size(), 1));
-        for (JLabel label : daysToPaydayLabelList) {
-            daysToPaydayPanel.add(label);
+        if (baseDate.getPaydayMap().containsKey(customerPaydayDayOfMonth)) {
+            return;
         }
+        baseDate.getPaydayMap().put(customerPaydayDayOfMonth, customerPaydayDayOfMonth);
+
+
+        PaydayUtil.initPaydayPanel(baseDate, paydayPanel);
 
         // 对panel内部的组件进行重新布局和绘制
-        daysToPaydayPanel.revalidate();
+        paydayPanel.revalidate();
         // 对panel本身进行重新绘制
-        daysToPaydayPanel.repaint();
+        paydayPanel.repaint();
     }
 
     /**
