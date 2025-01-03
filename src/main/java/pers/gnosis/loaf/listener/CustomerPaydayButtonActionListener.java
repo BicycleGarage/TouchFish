@@ -35,7 +35,7 @@ public class CustomerPaydayButtonActionListener implements ActionListener {
         daysToPaydayPanel.removeAll();
 
         String customerPaydayTextFieldText = customerPaydayTextField.getText();
-        if (customerPaydayTextFieldText == null || "".equals(customerPaydayTextFieldText)) {
+        if (customerPaydayTextFieldText == null || customerPaydayTextFieldText.isEmpty()) {
             return;
         }
         int customerPaydayDayOfMonth = getNormalCustomerPayday(customerPaydayTextFieldText);
