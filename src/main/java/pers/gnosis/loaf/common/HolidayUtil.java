@@ -15,10 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,6 +91,10 @@ public class HolidayUtil {
         baseDate.setNameHolidayMapNoOffDay(resultMap);
 
         baseDate.setAdvancePayday(false);
+
+        baseDate.setPaydayMap(new HashMap<Integer, Integer>() {{
+            put(15, 15);
+        }});
     }
 
     /**

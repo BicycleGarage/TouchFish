@@ -12,6 +12,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wangsiye
@@ -43,21 +44,28 @@ public class PaydayUtil {
         LocalDate now = baseDate.getNow();
         int year = now.getYear();
         int month = now.getMonthValue();
-        LocalDate currentMonthFirstPayday = PaydayUtil.getWorkDayPayday(
-                year, month, FIRST_PAYDAY, baseDate);
-        LocalDate currentMonthSecondPayday = PaydayUtil.getWorkDayPayday(
-                year, month, SECOND_PAYDAY, baseDate);
 
+        List<LocalDate> paydayDateList = new ArrayList<>();
+
+        Map<Integer, Integer> paydayMap = baseDate.getPaydayMap();
+        if(paydayMap == null || paydayMap.isEmpty()) {
+            return paydayDateList;
+        }
+
+        // 当月发薪日
+        paydayMap.keySet()
+                .forEach(payday -> paydayDateList.add(
+                        PaydayUtil.getWorkDayPayday(year, month, payday, baseDate)));
+
+        // 下月发薪日
         LocalDate nextMonthNow = now.plusMonths(1L);
         int nextMonthYear = nextMonthNow.getYear();
         int nextMonth = nextMonthNow.getMonthValue();
-        LocalDate nextMonthFirstPayday = PaydayUtil.getWorkDayPayday(
-                nextMonthYear, nextMonth, FIRST_PAYDAY, baseDate);
-        LocalDate nextMonthSecondPayday = PaydayUtil.getWorkDayPayday(
-                nextMonthYear, nextMonth, SECOND_PAYDAY, baseDate);
+        paydayMap.keySet()
+                .forEach(payday -> paydayDateList.add(
+                        PaydayUtil.getWorkDayPayday(nextMonthYear, nextMonth, payday, baseDate)));
 
-        return Arrays.asList(currentMonthFirstPayday, currentMonthSecondPayday,
-                nextMonthFirstPayday, nextMonthSecondPayday);
+        return paydayDateList;
     }
 
     /**

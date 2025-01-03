@@ -33,6 +33,12 @@ public class BaseDateBO {
     是否提前发薪，默认否
      */
     private boolean advancePayday = false;
+    /**
+     * 用户指定发薪日
+     * 用map是为方便查找
+     * value暂无意义，与key相同
+     */
+    private Map<Integer, Integer> paydayMap;
 
     public List<Holiday> getHolidayList() {
         return holidayList;
@@ -96,5 +102,13 @@ public class BaseDateBO {
 
     public void setAdvancePayday(boolean advancePayday) {
         this.advancePayday = advancePayday;
+    }
+
+    public Map<Integer, Integer> getPaydayMap() {
+        return paydayMap;
+    }
+
+    public void setPaydayMap(Map<Integer, Integer> paydayMap) {
+        this.paydayMap = paydayMap;
     }
 }
