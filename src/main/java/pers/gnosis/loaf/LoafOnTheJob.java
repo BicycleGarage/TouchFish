@@ -79,15 +79,18 @@ public class LoafOnTheJob {
      * @param jf 待填充的frame
      */
     private void initFrame(LoafOnTheJob loafOnTheJob, JFrame jf) {
-        jf.add(loafOnTheJob.getCloseButtonAndAlwaysOnTopCheckBoxPanel(jf));
-        jf.add(loafOnTheJob.getOpacitySliderPanel(jf));
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(4,1));
+        JPanel topButtonPanel = GUIUtil.getMyjPanelFlowLayout(false);
+        topButtonPanel.add(loafOnTheJob.getCloseButtonAndAlwaysOnTopCheckBoxPanel(jf));
+        jf.add(topButtonPanel);
+
+        JPanel topSliderPanel = GUIUtil.getMyjPanelFlowLayout(false);
+        topSliderPanel.add(loafOnTheJob.getOpacitySliderPanel(jf));
+        jf.add(topSliderPanel);
+
+        JPanel mainPanel = GUIUtil.getMyjPanelSingleColumn(5, false);
         makeUpMainPanel(loafOnTheJob, mainPanel);
         jf.add(mainPanel);
-
-        jf.add(loafOnTheJob.getCustomerPaydayPanel());
 
         // 每天0点更新mainPanel内容
         LocalDateTime todayZeroClock = baseDate.getNow().atStartOfDay();
@@ -116,10 +119,11 @@ public class LoafOnTheJob {
      * @param mainPanel 主容器
      */
     private void makeUpMainPanel(LoafOnTheJob loafOnTheJob, JPanel mainPanel) {
-        mainPanel.add(loafOnTheJob.getHolidayPanel());
         mainPanel.add(loafOnTheJob.getNoticePanel());
-        mainPanel.add(loafOnTheJob.getPayday());
+        mainPanel.add(loafOnTheJob.getHolidayPanel());
         mainPanel.add(loafOnTheJob.getLeftDayPanel());
+        mainPanel.add(loafOnTheJob.getPayday());
+        mainPanel.add(loafOnTheJob.getCustomerPaydayPanel());
     }
 
     /**
@@ -128,7 +132,7 @@ public class LoafOnTheJob {
      * @return 关闭按钮、指定复选框容器
      */
     private JPanel getCloseButtonAndAlwaysOnTopCheckBoxPanel(JFrame jf) {
-        JPanel closeButtonAndAlwaysOnTopCheckBoxPanel = new JPanel();
+        JPanel closeButtonAndAlwaysOnTopCheckBoxPanel = GUIUtil.getMyjPanel(1, 3, false);
         JButton closeButton = new JButton("Kill me !");
         closeButton.addActionListener(event -> System.exit(0));
         closeButtonAndAlwaysOnTopCheckBoxPanel.add(closeButton);
@@ -137,7 +141,7 @@ public class LoafOnTheJob {
         closeButtonAndAlwaysOnTopCheckBoxPanel.add(new Label("        "));
 
         final boolean[] alwaysOnTop = {false};
-        JCheckBox alwaysOnTopCheckBox = new JCheckBox("置顶显示：");
+        JCheckBox alwaysOnTopCheckBox = new JCheckBox("置顶显示");
         alwaysOnTopCheckBox.addChangeListener(event -> {
             alwaysOnTop[0] = !alwaysOnTop[0];
             jf.setAlwaysOnTop(alwaysOnTop[0]);
@@ -173,8 +177,7 @@ public class LoafOnTheJob {
             float valueFloat = slider.getValue();
             jf.setOpacity(valueFloat / 100);
         });
-        JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(0, 5, 0, 0));
+        JPanel panel = GUIUtil.getMyjPanelFlowLayout(true);
         panel.add(new JLabel("透明度："));
         panel.add(slider);
         return panel;
@@ -218,12 +221,11 @@ public class LoafOnTheJob {
      */
     private JPanel getPayday() {
 
-        JPanel mainPanel = new JPanel();
+        JPanel mainPanel = GUIUtil.getMyjPanelFlowLayout(false);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 1));
-        JPanel paydayPanel = new JPanel();
+        JPanel buttonPanel = GUIUtil.getMyjPanelSingleColumn(1, true);
+        JPanel paydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
 
         JLabel label1=new JLabel("发薪日为假期时：");
         JRadioButton rb1=new JRadioButton("提前发薪");
@@ -255,14 +257,13 @@ public class LoafOnTheJob {
      * @return 自定义发薪日容器
      */
     private JPanel getCustomerPaydayPanel() {
-        JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel.setLayout(new GridLayout(2, 1));
+        JPanel panel = GUIUtil.getMyjPanelSingleColumn(2, false);
 
-        JPanel inputPaydayPanel = new JPanel();
-        // JPanel默认布局为FlowLayout，其内部元素左边距有5，去掉左边距使该panel与GridLayout布局的panel对齐
+        JPanel inputPaydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
+        // 不明原因往右了一点
+        // 原因不是flowlayout的统一5左边距导致，因为滑块panel也为flowlayout，没有往右
         inputPaydayPanel.setBorder(new EmptyBorder(0, -5, 0, 0));
-        JPanel daysToPaydayPanel = new JPanel();
+        JPanel daysToPaydayPanel = GUIUtil.getMyjPanelFlowLayout(true);
 
         JLabel customerPaydayLabel = new JLabel("自定义发薪日：");
 
@@ -300,10 +301,8 @@ public class LoafOnTheJob {
         LocalDate nextSaturday = baseDate.getNextSaturday();
         LocalDate nextSunday = baseDate.getNextSunday();
 
-        JPanel panel3 = new JPanel();
-        panel3.setBorder(new EmptyBorder(10, 10, 10, 10));
         Map<String, Holiday> nameHolidayMapNoOffDay = baseDate.getNameHolidayMapNoOffDay();
-        panel3.setLayout(new GridLayout(3 + nameHolidayMapNoOffDay.size(), 1));
+        JPanel panel = GUIUtil.getMyjPanelSingleColumn(3 + nameHolidayMapNoOffDay.size(), false);
         List<JLabel> holidayLeftDaysLabelList = new ArrayList<>();
         holidayLeftDaysLabelList.add(new JLabel("距离本周周末："));
         holidayLeftDaysLabelList.add(new JLabel("周六 还有" + now.until(nextSaturday, ChronoUnit.DAYS) + "天"));
@@ -313,9 +312,9 @@ public class LoafOnTheJob {
                     + now.until(holiday.getDate(), ChronoUnit.DAYS) + "天"));
         }
         for (JLabel jLabel : holidayLeftDaysLabelList) {
-            panel3.add(jLabel);
+            panel.add(jLabel);
         }
-        return panel3;
+        return panel;
     }
 
     /**
@@ -324,9 +323,7 @@ public class LoafOnTheJob {
      * @return 提示信息JPanel
      */
     private JPanel getNoticePanel() {
-        JPanel panel2 = new JPanel();
-        panel2.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panel2.setLayout(new GridLayout(5, 1));
+        JPanel panel = GUIUtil.getMyjPanelSingleColumn(5, false);
         List<JLabel> noticeText = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM月dd日");
         noticeText.add(new JLabel(formatter.format(baseDate.getNow()) + DateTimeUtil.getPeriod() + "，摸鱼人"));
@@ -337,9 +334,9 @@ public class LoafOnTheJob {
         importantLabel.setForeground(COLOR_RED);
         noticeText.add(importantLabel);
         for (JLabel jLabel : noticeText) {
-            panel2.add(jLabel);
+            panel.add(jLabel);
         }
-        return panel2;
+        return panel;
     }
 
     /**
@@ -348,10 +345,8 @@ public class LoafOnTheJob {
      * @return 最近假期JPanel
      */
     private JPanel getHolidayPanel() {
-        JPanel panel1 = new JPanel();
-        panel1.setBorder(new EmptyBorder(10, 10, 10, 10));
         Map<String, Holiday> nameHolidayMapNoOffDay = baseDate.getNameHolidayMapNoOffDay();
-        panel1.setLayout(new GridLayout(3 + nameHolidayMapNoOffDay.size(), 1));
+        JPanel panel = GUIUtil.getMyjPanelSingleColumn(3 + nameHolidayMapNoOffDay.size(), false);
         List<JLabel> holidayLabelList = new ArrayList<>();
         holidayLabelList.add(new JLabel("最近的假期："));
         List<LocalDate> notOffHolidayDateList = baseDate.getNotOffHolidayDateList();
@@ -365,10 +360,11 @@ public class LoafOnTheJob {
             holidayLabelList.add(new JLabel(holiday.getName() + "：" + holiday.getDate().toString()));
         }
         for (JLabel jLabel : holidayLabelList) {
-            panel1.add(jLabel);
+            panel.add(jLabel);
         }
-        return panel1;
+        return panel;
     }
+
 
     public BaseDateBO getBaseDate() {
         return baseDate;
