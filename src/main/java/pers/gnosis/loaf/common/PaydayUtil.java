@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,24 +18,19 @@ import java.util.Map;
  * @author wangsiye
  */
 public class PaydayUtil {
-    /**
-     * 首次发薪日
-     */
-    public static final int FIRST_PAYDAY = 10;
-    /**
-     * 二次发薪日
-     */
-    public static final int SECOND_PAYDAY = 15;
     public static final int SATURDAY_VALUE = DayOfWeek.SATURDAY.getValue();
     public static final int SUNDAY_VALUE = DayOfWeek.SUNDAY.getValue();
     public static final DecimalFormat FORMAT = new DecimalFormat("00");
     public static final boolean ADVANCE_PAYDAY = true;
     public static final boolean DELAY_PAYDAY = false;
-
+    /**
+     * 默认发薪日：15日
+     */
+    public static final int DEFAULT_PAYDAY = 15;
 
     /**
      * 获取发薪日<br />
-     * 发薪日：当月、下月的10、15日，若发薪日为周六日、节假日，则提前至最近的工作日
+     * 发薪日：baseDate.getPaydayMap()，用户输入，默认包含15日。若发薪日为周六日、节假日，则提前至最近的工作日
      *
      * @param baseDate 基本时间对象
      * @return 发薪日集合：固定4个，本月和下月的10、15日（若发薪日为周六日、节假日，则提前至最近的工作日）
@@ -164,5 +159,15 @@ public class PaydayUtil {
         for (JLabel jLabel : labelList) {
             paydayPanel.add(jLabel);
         }
+    }
+
+    /**
+     * 初始化发薪日map
+     * @return 发薪日map，默认包含15日
+     */
+    public static HashMap<Integer, Integer> initPaydayMap() {
+        return new HashMap<Integer, Integer>() {{
+            put(PaydayUtil.DEFAULT_PAYDAY, PaydayUtil.DEFAULT_PAYDAY);
+        }};
     }
 }

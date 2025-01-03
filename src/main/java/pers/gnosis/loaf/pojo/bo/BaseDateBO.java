@@ -37,6 +37,7 @@ public class BaseDateBO {
      * 用户指定发薪日
      * 用map是为方便查找
      * value暂无意义，与key相同
+     * 默认包含15日
      */
     private Map<Integer, Integer> paydayMap;
 

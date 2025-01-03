@@ -92,9 +92,7 @@ public class HolidayUtil {
 
         baseDate.setAdvancePayday(false);
 
-        baseDate.setPaydayMap(new HashMap<Integer, Integer>() {{
-            put(15, 15);
-        }});
+        baseDate.setPaydayMap(PaydayUtil.initPaydayMap());
     }
 
     /**
