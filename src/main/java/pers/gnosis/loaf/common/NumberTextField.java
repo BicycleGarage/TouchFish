@@ -19,14 +19,15 @@ public class NumberTextField extends PlainDocument {
         }
 
         char[] s = str.toCharArray();
-        int length = 0;
-        // 过滤非数字
-        for (int i = 0; i < s.length; i++) {
-            if ((s[i] >= '0') && (s[i] <= '9')) {
-                s[length++] = s[i];
+        StringBuilder numericString = new StringBuilder();
+        for (char c : s) {
+            if (Character.isDigit(c)) {
+                numericString.append(c);
             }
-            // 插入内容
-            super.insertString(offset, new String(s, 0, length), attr);
+        }
+
+        if (numericString.length() > 0) {
+            super.insertString(offset, numericString.toString(), attr);
         }
     }
 }
