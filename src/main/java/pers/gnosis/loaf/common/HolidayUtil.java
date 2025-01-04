@@ -2,6 +2,7 @@ package pers.gnosis.loaf.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import pers.gnosis.loaf.Holiday;
 import pers.gnosis.loaf.LoafOnTheJob;
 import pers.gnosis.loaf.pojo.bo.BaseDateBO;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * 将节假日对象初始化成程序所需的各个细分数据。
  * @author wangsiye
  */
+@Slf4j
 public class HolidayUtil {
 
     /**
@@ -57,17 +59,17 @@ public class HolidayUtil {
         baseDate.setHolidayList(holidays);
 
         baseDate.setNotOffHolidayDateList(holidays.stream()
-                .filter(holiday -> !holiday.getOffDay())
+                .filter(holiday -> !holiday.getIsOffDay())
                 .map(Holiday::getDate)
                 .collect(Collectors.toList()));
 
         baseDate.setHolidayDateList(holidays.stream()
-                .filter(Holiday::getOffDay)
+                .filter(Holiday::getIsOffDay)
                 .map(Holiday::getDate)
                 .collect(Collectors.toList()));
 
         Map<String, List<Holiday>> nameHolidayListMap = holidays.stream()
-                .filter(Holiday::getOffDay)
+                .filter(Holiday::getIsOffDay)
                 .collect(Collectors.groupingBy(holiday -> holiday.getName() + "(" + holiday.getDate().getYear() + ")"));
         Map<String, Holiday> nameHolidayMap = new LinkedHashMap<>();
         for (Map.Entry<String, List<Holiday>> nameHolidayEntry : nameHolidayListMap.entrySet()) {
@@ -128,7 +130,6 @@ public class HolidayUtil {
             // 读取 JSON 文件内容为字符串
             String fileName = year + HolidayUtil.HOLIDAY_JSON_SUFFIX;
             json = ResourceFileReader.readFileAsString(fileName);
-
         } catch (Exception e) {
             // 出现异常，则从网络获取节假日
             json = get(getPath(year));
@@ -181,7 +182,7 @@ public class HolidayUtil {
                 lines.append(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("发生异常：{}", e.getMessage(), e);
             // 如果请求失败, 尝试重新请求
             if (i < RETRY_TIME) {
                 i++;
@@ -190,7 +191,7 @@ public class HolidayUtil {
                     Thread.sleep(3000);
                     return get(url, i);
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    log.error("发生异常：{}", ex.getMessage(), ex);
                 }
             } else {
                 System.out.println("获取失败, 请检查网络或稍后重试");
@@ -201,7 +202,7 @@ public class HolidayUtil {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error("发生异常：{}", e.getMessage(), e);
                 }
             }
             if (connection != null) {

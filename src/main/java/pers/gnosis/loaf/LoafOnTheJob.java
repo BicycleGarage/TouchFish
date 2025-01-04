@@ -1,5 +1,12 @@
 package pers.gnosis.loaf;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import pers.gnosis.loaf.common.*;
 import pers.gnosis.loaf.listener.AdvancePaydayButtonActionListener;
 import pers.gnosis.loaf.listener.CustomerPaydayAddButtonActionListener;
@@ -12,18 +19,21 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.File;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
 import java.util.Timer;
+import java.util.*;
 
 /**
  * @author wangsiye
  */
+@Getter
+@Slf4j
 public class LoafOnTheJob {
 
     /**
@@ -40,9 +50,62 @@ public class LoafOnTheJob {
     }
 
     public static void main(String[] args) {
+        // 动态确定日志文件路径
+        String logPath = getLogFilePath();
+
+        // 配置Logback日志记录
+        configureLogging(logPath);
+
         LoafOnTheJob loafOnTheJob = new LoafOnTheJob(LocalDate.now());
 
+        // 记录日志
+        log.info("程序启动了");
+
         loafOnTheJob.showFrame();
+
+        // 注册关闭钩子，打印退出日志
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> log.info("程序关闭")));
+    }
+
+    /**
+     * 获取日志记录位置
+     * @return 日志路径
+     */
+    private static String getLogFilePath() {
+        String logPath;
+
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // Windows系统，动态获取用户名
+            String userHome = System.getProperty("user.home");
+            logPath = userHome + File.separator + "TouchFish" + File.separator + "logs" + File.separator + "app.log";
+        } else {
+            // Linux系统
+            logPath = "/var/log/myapp/logs/app.log"; // 或者使用适合的目录
+        }
+        return logPath;
+    }
+
+    private static void configureLogging(String logPath) {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        context.reset(); // 清除默认配置
+
+        // 创建FileAppender
+        FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
+        fileAppender.setContext(context);
+        fileAppender.setFile(logPath); // 设置日志文件路径
+
+        // 创建PatternLayout
+        PatternLayout layout = new PatternLayout();
+        layout.setContext(context);
+        layout.setPattern("%d{yyyy-MM-dd HH:mm:ss} [%level] - %msg%n");
+        layout.start();
+
+        // 设置Appender的布局
+        fileAppender.setLayout(layout);
+        fileAppender.start();
+
+        // 将FileAppender添加到Logger
+        context.getLogger("ROOT").addAppender(fileAppender);
     }
 
     /**
@@ -349,9 +412,5 @@ public class LoafOnTheJob {
         return panel;
     }
 
-
-    public BaseDateBO getBaseDate() {
-        return baseDate;
-    }
 
 }

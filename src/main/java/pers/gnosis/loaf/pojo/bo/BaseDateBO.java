@@ -1,5 +1,7 @@
 package pers.gnosis.loaf.pojo.bo;
 
+import lombok.Getter;
+import lombok.Setter;
 import pers.gnosis.loaf.Holiday;
 
 import java.time.LocalDate;
@@ -9,6 +11,8 @@ import java.util.Map;
 /**
  * @author wangsiye
  */
+@Setter
+@Getter
 public class BaseDateBO {
     private LocalDate now;
     private LocalDate nextSaturday;
@@ -41,75 +45,4 @@ public class BaseDateBO {
      */
     private Map<Integer, Integer> paydayMap;
 
-    public List<Holiday> getHolidayList() {
-        return holidayList;
-    }
-
-    public void setHolidayList(List<Holiday> holidayList) {
-        this.holidayList = holidayList;
-    }
-
-    public Map<String, Holiday> getNameHolidayMapNoOffDay() {
-        return nameHolidayMapNoOffDay;
-    }
-
-    public void setNameHolidayMapNoOffDay(Map<String, Holiday> nameHolidayMapNoOffDay) {
-        this.nameHolidayMapNoOffDay = nameHolidayMapNoOffDay;
-    }
-
-    public List<LocalDate> getNotOffHolidayDateList() {
-        return notOffHolidayDateList;
-    }
-
-    public void setNotOffHolidayDateList(List<LocalDate> notOffHolidayDateList) {
-        this.notOffHolidayDateList = notOffHolidayDateList;
-    }
-
-    public List<LocalDate> getHolidayDateList() {
-        return holidayDateList;
-    }
-
-    public void setHolidayDateList(List<LocalDate> holidayDateList) {
-        this.holidayDateList = holidayDateList;
-    }
-
-    public LocalDate getNow() {
-        return now;
-    }
-
-    public void setNow(LocalDate now) {
-        this.now = now;
-    }
-
-    public LocalDate getNextSaturday() {
-        return nextSaturday;
-    }
-
-    public void setNextSaturday(LocalDate nextSaturday) {
-        this.nextSaturday = nextSaturday;
-    }
-
-    public LocalDate getNextSunday() {
-        return nextSunday;
-    }
-
-    public void setNextSunday(LocalDate nextSunday) {
-        this.nextSunday = nextSunday;
-    }
-
-    public boolean isAdvancePayday() {
-        return advancePayday;
-    }
-
-    public void setAdvancePayday(boolean advancePayday) {
-        this.advancePayday = advancePayday;
-    }
-
-    public Map<Integer, Integer> getPaydayMap() {
-        return paydayMap;
-    }
-
-    public void setPaydayMap(Map<Integer, Integer> paydayMap) {
-        this.paydayMap = paydayMap;
-    }
 }

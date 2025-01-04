@@ -1,10 +1,15 @@
 package pers.gnosis.loaf;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 /**
  * 假日对象
  */
+@Getter
+@Setter
 public class Holiday {
     private LocalDate date;
     /**
@@ -12,28 +17,4 @@ public class Holiday {
      */
     private Boolean isOffDay;
     private String name;
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public Boolean getOffDay() {
-        return isOffDay;
-    }
-
-    public void setOffDay(Boolean offDay) {
-        isOffDay = offDay;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }
