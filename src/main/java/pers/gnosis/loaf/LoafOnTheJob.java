@@ -370,7 +370,7 @@ public class LoafOnTheJob {
      * @return 提示信息JPanel
      */
     private JPanel getNoticePanel() {
-        JPanel panel = GUIUtil.getMyjPanelSingleColumn(5, false);
+        JPanel panel = GUIUtil.getMyjPanelSingleColumn(6, false);
         List<JLabel> noticeText = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM月dd日");
         noticeText.add(new JLabel(formatter.format(baseDate.getNow()) + DateTimeUtil.getPeriod() + "，摸鱼人"));
@@ -380,11 +380,17 @@ public class LoafOnTheJob {
         JLabel importantLabel = new JLabel("钱是老板的，但命是自己的");
         importantLabel.setForeground(COLOR_RED);
         noticeText.add(importantLabel);
+
+        // 标签显示倒计时
+        JPanel countdownPanel = OffWorkCountdownUtil.makeupCountdownPanel(baseDate);
+
         for (JLabel jLabel : noticeText) {
             panel.add(jLabel);
         }
+        panel.add(countdownPanel);
         return panel;
     }
+
 
     /**
      * 获取最近假期

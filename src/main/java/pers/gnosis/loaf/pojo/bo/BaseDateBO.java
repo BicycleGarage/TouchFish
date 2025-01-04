@@ -7,6 +7,7 @@ import pers.gnosis.loaf.Holiday;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 
 /**
  * @author wangsiye
@@ -44,5 +45,24 @@ public class BaseDateBO {
      * 默认包含15日
      */
     private Map<Integer, Integer> paydayMap;
-
+    /**
+     * 倒计时的时
+     */
+    private int hour;
+    /**
+     * 倒计时的分
+     */
+    private int minuted;
+    /**
+     * 倒计时剩余秒数
+     */
+    private long timeLeft;
+    /**
+     * 逐秒进行的倒计时的timer
+     */
+    private Timer offWorkTimer;
+    /**
+     * 结束倒计时的timer，用于倒计时结束之后做些操作
+     */
+    private Timer endCountdownTimer;
 }
