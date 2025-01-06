@@ -1,12 +1,12 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="TouchFish:jar">
+  <artifact type="jar" build-on-make="true" name="TouchFish:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/TouchFish_jar</output-path>
     <root id="archive" name="TouchFish.jar">
       <element id="module-output" name="TouchFish" />
-      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/com/alibaba/fastjson/1.2.83/fastjson-1.2.83.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/ch/qos/logback/logback-classic/1.2.10/logback-classic-1.2.10.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/.m2/repository/ch/qos/logback/logback-core/1.2.10/logback-core-1.2.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/ch/qos/logback/logback-classic/1.2.10/logback-classic-1.2.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/com/alibaba/fastjson/1.2.83/fastjson-1.2.83.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

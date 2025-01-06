@@ -23,10 +23,11 @@ public class GUIUtil {
      * @return JPanel
      */
     public static JPanel getMyjPanel(int gridLayoutRowCount, int gridLayoutColumnCount, boolean isChild) {
-        JPanel panel1 = new JPanel();
-        setBorder(isChild, panel1);
-        panel1.setLayout(new GridLayout(gridLayoutRowCount, gridLayoutColumnCount));
-        return panel1;
+        JPanel panel = new JPanel();
+        setBorder(isChild, panel);
+        panel.setLayout(new GridLayout(gridLayoutRowCount, gridLayoutColumnCount));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return panel;
     }
 
     /**
@@ -36,11 +37,12 @@ public class GUIUtil {
      * @return JPanel
      */
     public static JPanel getMyjPanelFlowLayout(boolean isChild) {
-        JPanel panel1 = new JPanel();
-        FlowLayout layout = (FlowLayout) panel1.getLayout();
+        JPanel panel = new JPanel();
+        FlowLayout layout = (FlowLayout) panel.getLayout();
         layout.setAlignment(FlowLayout.LEFT);
-        setBorder(isChild, panel1);
-        return panel1;
+        setBorder(isChild, panel);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return panel;
     }
 
     /**
@@ -63,6 +65,20 @@ public class GUIUtil {
     public static JPanel getMainPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return panel;
+    }
+
+    /**
+     * 无边距boxlayout的panel，纵向排列，左对齐
+     * @return JPanel
+     */
+    public static JPanel getMyPanelBoxLayout(boolean isChild) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        setBorder(isChild, panel);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         return panel;
     }
 }

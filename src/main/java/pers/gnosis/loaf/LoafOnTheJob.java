@@ -370,7 +370,7 @@ public class LoafOnTheJob {
      * @return 提示信息JPanel
      */
     private JPanel getNoticePanel() {
-        JPanel panel = GUIUtil.getMyjPanelSingleColumn(6, false);
+        JPanel panel = GUIUtil.getMyPanelBoxLayout(false);
         List<JLabel> noticeText = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM月dd日");
         noticeText.add(new JLabel(formatter.format(baseDate.getNow()) + DateTimeUtil.getPeriod() + "，摸鱼人"));
@@ -383,8 +383,10 @@ public class LoafOnTheJob {
 
         // 标签显示倒计时
         JPanel countdownPanel = OffWorkCountdownUtil.makeupCountdownPanel(baseDate);
+        countdownPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         for (JLabel jLabel : noticeText) {
+            jLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(jLabel);
         }
         panel.add(countdownPanel);
